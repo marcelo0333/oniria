@@ -1,21 +1,30 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Button from "./Button";
 import { param } from "framer-motion/client";
 import Select from "./Select";
 import { Slider } from "./Slider";
+import { DreamInfos } from "@/actions/interfaces/DreamInfos";
 
-export function FormComponent() {
+interface Props {
+    onSubmit: (infos: DreamInfos) => void;
+}
 
-    const [infos, setInfos] = React.useState({
+export function FormComponent({ onSubmit }: Props) {
+    const [intensity] = React.useState(5);
+    const [infos, setInfos] = React.useState<DreamInfos>({
         title: "",
         type: "",
         description: "",
         emotion: "",
         scenerie: "",
+        intensity: intensity,
     });
-    const [intensity, setIntensity] = React.useState(5);
+    function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        onSubmit(infos);
+    }
     return (
-        <form className="flex flex-col gap-4">
+        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <label className="flex flex-col text-sm">
                 <span className="mb-1 font-medium text-gray-700 dark:text-gray-300">Dream Title</span>
                 <input type="text"
@@ -57,7 +66,7 @@ export function FormComponent() {
                     placeholder="Describe your dream scenerie in detail e.g., a forest, a bustling city, a serene beach."
                 />
                 <span className="mb-1 font-medium text-gray-700 dark:text-gray-300">Surrealism</span>
-                    <Slider label="Surrealism" value={intensity} min={0} max={10} step={1} onChange={setIntensity} />
+                    <Slider label="Surrealism" value={infos.intensity} min={0} max={10} step={1} onChange={(value) => setInfos({ ...infos, intensity: value })} />
                 </label>
             <div className="flex justify-center mt-2">
                 <Button title="Submit" type="submit" />

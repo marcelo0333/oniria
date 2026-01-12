@@ -31,7 +31,16 @@ export function Modal({ open, onClose, children }: ModalProps) {
                     <div
                     className="pointer-events-auto w-full max-w-md rounded-2xl
                                 bg-white/80 dark:bg-zinc-900/80
-                                backdrop-blur-sm shadow-xl p-6"
+                                relative
+                                backdrop-blur-sm
+                                shadow-xl
+                                p-6
+                                max-h-[80vh]
+                                overflow-y-auto
+                                scroll-smooth
+                                scrollbar-thin
+                                scrollbar-thumb-zinc-500/30
+                                scrollbar-track-transparent"
                     onClick={(e) => e.stopPropagation()}
                     >
                         {children}
