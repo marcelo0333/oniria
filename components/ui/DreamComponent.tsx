@@ -2,11 +2,15 @@ import React, { useEffect } from 'react'
 import ImageFull from './ImageFull';
 import { GenerateImage } from '@/actions/generate-image-get';
 import Loading from './Loading';
+import Loader from './Loader';
 
 interface Props {
     dreamResult: {
+        title: string;
         interpretation: string;
         keySymbolism: string;
+        warnings: string,
+        luckNumbers: string,
         imagesPrompts: {
             finalSceneImageUrl: undefined;
             finalEmotionImageUrl: undefined;
@@ -22,7 +26,7 @@ export default function DreamComponent({ dreamResult }: Props  ) {
      return (
     <div className="flex w-full flex-col gap-5 animate-fade-in">
         <div className="flex justify-center items-center">
-            <h2 className="text-2xl font-[var(--font-playfair)] text-zinc-100 ">Your Dream Interpretation</h2>
+            <h2 className="text-xl font-[var(--font-playfair)] text-zinc-100 ">{dreamResult?.title}</h2>
         </div>
         <div className="bg-zinc-900/80 border border-zinc-800 rounded-lg p-6 shadow-lg">
             <p className="text-zinc-300">{dreamResult?.interpretation}</p>
@@ -30,38 +34,32 @@ export default function DreamComponent({ dreamResult }: Props  ) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex flex-col items-center">
             <h3 className="text-lg font-semibold text-zinc-100 mb-2">Dream Scene</h3>
-            {dreamResult.imagesPrompts.finalSceneImageUrl && (
-                <img
-                    src={dreamResult.imagesPrompts.finalSceneImageUrl || undefined}
-                    alt="Dream Scene"
-                    className="rounded-lg shadow-md cursor-zoom-in"
-                    onClick={() =>
-                    setOpenImage({
-                        img: dreamResult.imagesPrompts.finalSceneImageUrl || undefined,
-                        title: "Dream Scene",
-                    })
-                    }
-                />
-            )}
-  
+          {dreamResult.imagesPrompts.finalSceneImageUrl ? (
+                    <img
+                        src={dreamResult.imagesPrompts.finalSceneImageUrl}
+                        alt="Dream Scene"
+                        className="rounded-lg shadow-md cursor-zoom-in hover:opacity-90 transition"
+                        onClick={() => setOpenImage({
+                            img: dreamResult.imagesPrompts.finalSceneImageUrl,
+                            title: "Dream Scene",
+                        })}
+                    />
+                ) : <Loader />}
             </div>
             <div className="flex flex-col items-center">
                 <h3 className="text-lg font-semibold text-zinc-100 mb-2">Emotional Abstract</h3>
-                {dreamResult.imagesPrompts.finalEmotionImageUrl && (
-                    <img
-                        src={dreamResult.imagesPrompts.finalEmotionImageUrl || undefined}
-                        alt="Emotional Abstract"
-                        className="rounded-lg shadow-md cursor-zoom-in"
-                        onClick={() =>
-                        setOpenImage({
-                            img: dreamResult.imagesPrompts.finalEmotionImageUrl || undefined,
-                            title: "Emotional Abstract",
-                        })
-                        }
-                    />
-                )}
-
-            </div>
+                {dreamResult.imagesPrompts.finalEmotionImageUrl ? (
+                            <img
+                                src={dreamResult.imagesPrompts.finalEmotionImageUrl}
+                                alt="Emotional Abstract"
+                                className="rounded-lg shadow-md cursor-zoom-in hover:opacity-90 transition"
+                                onClick={() => setOpenImage({
+                                    img: dreamResult.imagesPrompts.finalEmotionImageUrl,
+                                    title: "Emotional Abstract",
+                                })}
+                            />
+                        ) : <Loader />}
+                    </div>
                 {openImage && (
                 <ImageFull
                     img={openImage.img}
@@ -71,10 +69,22 @@ export default function DreamComponent({ dreamResult }: Props  ) {
                 )}
         </div>
         <div className="flex justify-center items-center">
-            <h2 className="text-2xl font-[var(--font-playfair)] text-zinc-100 ">Simbolism</h2>
+            <h2 className="text-xl font-[var(--font-playfair)] text-zinc-100 ">Simbolism</h2>
         </div>
         <div className="bg-zinc-900/80 border border-zinc-800 rounded-lg p-6 shadow-lg">
             <p className="text-zinc-300"> {dreamResult?.keySymbolism} </p>
+        </div>
+         <div className="flex justify-center items-center">
+            <h2 className="text-xl font-[var(--font-playfair)] text-zinc-100 ">Warnings</h2>
+        </div>
+        <div className="bg-zinc-900/80 border border-zinc-800 rounded-lg p-6 shadow-lg">
+            <p className="text-zinc-300"> {dreamResult?.warnings} </p>
+        </div>
+          <div className="flex justify-center items-center">
+            <h2 className="text-xl font-[var(--font-playfair)] text-zinc-100 ">Luck Numbers</h2>
+        </div>
+           <div className="bg-zinc-900/80 border border-zinc-800 rounded-lg p-6 shadow-lg">
+            <p className="text-zinc-300"> {dreamResult?.luckNumbers} </p>
         </div>
     </div>
   )

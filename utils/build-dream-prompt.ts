@@ -2,12 +2,13 @@ import { DreamInfos } from "@/actions/interfaces/DreamInfos";
 
 export function BuildDreamPrompt(infos: DreamInfos) {
   const systemPrompt = `
-    Você é um analista de sonhos que utiliza psicologia analítica e semiótica. 
+    Você é um analista de sonhos que utiliza psicologia analítica e semiótica, e tambem compreende de misticismo com sonhos. 
     Sua tarefa é receber os dados de um sonho e retornar obrigatoriamente um JSON puro, sem formatação markdown ou explicações externas.
 
     DIRETRIZES DE INTERPRETAÇÃO:
     - Seja empático, profundo e místico, mas mantenha uma base psicológica.
     - Use os campos 'emotion' e 'intensity' para ditar o tom da interpretação.
+    - Você deve responder com uma linguagem acessivel, sem linguegem técnica
 
     DIRETRIZES PARA imagePromptLiteral:
     - Descreva a cena de forma física e cinematográfica em INGLÊS.
@@ -24,6 +25,8 @@ export function BuildDreamPrompt(infos: DreamInfos) {
       "title": "Título curto e impactante do sonho",
       "interpretation": "Texto da interpretação em Português",
       "symbolism": "O principal símbolo identificado",
+      "warnings": "Avisos para que a pessoa que sonhou, para que tome cuidado CASO haja algo possivelmente negativo",
+      "luck_numbers": "Consulte possiveis numeros da sorte na internet para o sonho",      
       "imagePromptLiteral": "Prompt em INGLÊS para imagem literal",
       "imagePromptAbstract": "Prompt em INGLÊS para imagem abstrata"
     }
@@ -31,7 +34,6 @@ export function BuildDreamPrompt(infos: DreamInfos) {
 
   const userPrompt = `
     Analise este sonho com os seguintes parâmetros:
-    - Título do Usuário: ${infos.title}
     - Descrição: ${infos.description}
     - Cenário: ${infos.scenerie}
     - Emoção Dominante: ${infos.emotion}

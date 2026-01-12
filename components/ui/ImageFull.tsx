@@ -1,5 +1,6 @@
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom';
 
 interface Props {
     img: string | undefined;
@@ -8,14 +9,27 @@ interface Props {
 }
 
 export default function ImageFull({ img, title, onClose }: Props) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in">
+  const [mounted, SetMounted] = useState(false)
+
+  useEffect(()=>{
+    SetMounted(true)
+    if(img){
+      document.body.style.overflow = 'hidden'
+    }
+    return()=>{
+      document.body.style.overflow = 'unset'      
+    };
+  },[img]);
+  if(!mounted || !img) return null
+
+  return createPortal(
+    <div className="absolute inset-0 z-100 flex items-center justify-center animate-fade-in">
 
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
 
       {/* Conteúdo */}
-      <div className="relative z-10 flex flex-col items-center gap-4 px-6">
+      <div className="relative z-100 flex flex-col items-center gap-4 px-6">
 
         {title && (
           <h3 className="text-xl font-[var(--font-playfair)] text-zinc-200 tracking-wide">
@@ -30,11 +44,11 @@ export default function ImageFull({ img, title, onClose }: Props) {
         />
         <button
           onClick={onClose}
-          className="mt-4 rounded-full bg-purple-600/80 px-4 py-2 text-zinc-100 hover:bg-purple-600/100 transition"
+          className="pointer-events-auto absolute bottom-8 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 px-5 py-3 text-white backdrop-blur-md transition-all hover:scale-105 active:scale-95"
         >
-          Close
+          Close View
         </button>
       </div>
     </div>
-  );
+  , document.body);
 }

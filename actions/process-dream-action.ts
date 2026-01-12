@@ -17,15 +17,20 @@ export async function ProcessDreamAction(infos: DreamInfos){
         const text = response.text().replace(/```json|```/g, '').replace(/```/g, "").trim();
         const dreamPrompt = JSON.parse(text);
 
-        const finalScenePrompt = encodeURIComponent(dreamPrompt.imagePromptLiteral + ",  highly detailed photograph, cinematic lighting, 8k resolution, realistic " + negativeSuffix)
-        const finalEmotionPrompt = encodeURIComponent(dreamPrompt.imagePromptAbstract + ", abstract art, surrealism, highly textured, emotional, vivid colors" + negativeSuffix)
+        console.info(dreamPrompt)
+
+        const finalScenePrompt = encodeURIComponent(dreamPrompt.imagePromptLiteral + ", POV shot from the eyes, highly detailed photograph, cinematic lighting, realistic " + negativeSuffix)
+        const finalEmotionPrompt = encodeURIComponent(dreamPrompt.imagePromptAbstract + ", POV shot from the eyes, surrealism, highly textured, emotional, vivid colors" + negativeSuffix)
 
         const finalSceneImageUrl = buildPollinationsImage(finalScenePrompt);
         const finalEmotionImageUrl = buildPollinationsImage(finalEmotionPrompt);
 
       return {
+        title: dreamPrompt.title as string,
         interpretation: dreamPrompt.interpretation as string,
-        keySymbolism: dreamPrompt.keySymbolism as string,
+        keySymbolism: dreamPrompt.symbolism as string,
+        warnings: dreamPrompt.warnings as string,
+        luckNumbers: dreamPrompt.luck_numbers as string,
         imagesPrompts: {finalSceneImageUrl, finalEmotionImageUrl}
       };
     }catch (error) {
