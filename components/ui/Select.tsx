@@ -1,31 +1,45 @@
+import { on } from "events";
 import { AnimatePresence, motion } from "framer-motion";
+import { tr } from "framer-motion/client";
 import React from "react";
 
 type Props = {
+    id: string;
     label: string;
     options: { label: string; value: string }[];
     onChange: (value: string) => void;
+    isOpen?: boolean;
+    onToggle?: () => void;
 };
 
-export default function Select({ options, onChange, label }: Props) {
-    const [open, setOpen] = React.useState(false);
+export default function Select({
+    options,
+    onChange,
+    label,
+    isOpen,
+    onToggle 
+}: Props) {
+    function handleSelect(value: string) {
+        onChange(value);
+        console.log("selected", value);
+    }
     const [selected, setSelected] = React.useState<string>("");
     return (
         <div className="relative">
             <button
             type="button"
-            onClick={() => setOpen(!open)}
+            onClick={onToggle}
             className="w-full rounded-2xl px-4 py-3 text-left border border-gray-300 text-gray-500 mb-2"
             >
-                {selected && (
+                {selected ? (
                     <span className="text-purple-300">{selected}</span>
-                )}
-                {!selected && (
+                ) :
+                (
                     <span>{label}</span>
                 )}
             </button>
             <AnimatePresence>
-            {open && (
+            {isOpen && (
                 <motion.ul
                 initial={{ opacity: 0, y: -6, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -55,7 +69,7 @@ export default function Select({ options, onChange, label }: Props) {
                         onClick={() => {
                             onChange(option?.value);
                             setSelected(option?.label);
-                            setOpen(false);
+                            handleSelect("closed");
                         }}
                         >
                             {option?.label}

@@ -1,15 +1,25 @@
 import React, { useEffect } from "react";
 import Button from "./Button";
-import { param } from "framer-motion/client";
+import { param, tr } from "framer-motion/client";
 import Select from "./Select";
 import { Slider } from "./Slider";
 import { DreamInfos } from "@/actions/interfaces/DreamInfos";
+import { type } from '../../.next/dev/types/routes';
 
 interface Props {
     onSubmit: (infos: DreamInfos) => void;
 }
 
 export function FormComponent({ onSubmit }: Props) {
+
+    const [openSelect, setOpenSelect] = React.useState<string>("");
+
+      function openSelectFunction(type: boolean, selected: boolean) {
+        type = true;
+        if (!type && selected) {
+            setOpenSelect("");
+        }
+    }
     const [intensity] = React.useState(5);
     const [infos, setInfos] = React.useState<DreamInfos>({
         type: "",
@@ -35,24 +45,43 @@ export function FormComponent({ onSubmit }: Props) {
             </label>
             <label className="flex flex-col text-sm">
                 <span className="mb-1 font-medium text-gray-700 dark:text-gray-300">Type Dream</span>
-                <Select label="Select dream type" options={[
+                <Select
+                id="type"
+                label="Select dream type"
+                options={[
                     { label: "Lucid", value: "lucid" },
                     { label: "Adventure", value: "adventure" },
                     { label: "Fantasy", value: "fantasy" },
                     { label: "Nightmare", value: "nightmare" },
-                ]} onChange={(value) => setInfos({ ...infos, type: value })}
+                ]}
+                onChange={(value) => {
+                    setInfos({ ...infos, type: value });
+                    openSelectFunction(false, openSelect === "type");
+                }}
+                isOpen={openSelect === "type"}
+                onToggle={() => setOpenSelect(openSelect === "type" ? "" : "type")}
+
                 />
             </label>
             <label className="flex flex-col text-sm">
                 <span className="mb-1 font-medium text-gray-700 dark:text-gray-300">Emotion</span>
-                <Select label="Select emotion" options={[
+                <Select
+                id="emotion"
+                label="Select emotion"
+                options={[
                     { label: "Calm", value: "calm" },
                     { label: "Happy", value: "happy" },
                     { label: "Intense", value: "intense" },
                     { label: "Confortable", value: "confortable" },
                     { label: "Hopelles", value: "hopelles" },
                     { label: "Anxious", value: "anxious" },
-                ]} onChange={(value) => setInfos({...infos, emotion: value })}
+                ]}
+                onChange={(value) => {
+                    setInfos({ ...infos, emotion: value });
+                    openSelectFunction(false, openSelect === "emotion");
+                }}
+                isOpen={openSelect === "emotion"}
+                onToggle={() => setOpenSelect(openSelect === "emotion" ? "" : "emotion")}
                 />
             </label>
             <label className="flex flex-col text-sm">
