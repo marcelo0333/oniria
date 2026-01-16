@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  // Relacionamento com dreams (se quiser)
+  dreams    Dream[]
+}
+
+model Dream {
+  id            String   @id @default(uuid())
+  title         String
+  description   String
+  type          String
+  emotion       String
+  scenerie      String
+  intensity     Int
+  luckNumbers    String?  // ✅ Adicione esta linha
+  warnings    String?  // ✅ Adicione esta linha
+  finalSceneImageUrl    String?  // ✅ Adicione esta linha
+  finalEmotionImageUrl    String?  // ✅ Adicione esta linha
+
+  interpretation String?
+  keySymbolism   String?
+
+  createdAt     DateTime @default(now())
+
+  userId        String?
+  user          User? @relation(fields: [userId], references: [id])
+}
