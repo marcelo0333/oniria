@@ -3,6 +3,8 @@ import ImageFull from './ImageFull';
 import { GenerateImage } from '@/actions/generate-image-get';
 import Loading from './Loading';
 import Loader from './Loader';
+import { DownloadIcon, SaveIcon, ShareIcon } from 'lucide-react';
+import ButtonAction from './ButtonAction';
 
 interface Props {
     dreamResult: {
@@ -16,15 +18,26 @@ interface Props {
             finalEmotionImageUrl: undefined;
 };
     }
+    onSave: () => Promise<void>;
+    isPending?: boolean;
+    isLoggedIn?: boolean;
 }
 
-export default function DreamComponent({ dreamResult }: Props  ) {
+export default function DreamComponent({ dreamResult, onSave, isPending, isLoggedIn }: Props  ) {
 
     const [openImage, setOpenImage] = React.useState<{img: string | undefined; title: string} | null>(null);
 
 
      return (
     <div className="flex w-full flex-col gap-5 animate-fade-in">
+        <div className="flex justify-end gap-2 items-center">
+        <ButtonAction mainColor="indigo" nameAction="save" onClick={onSave} disabled={isPending || !isLoggedIn} loggedIn={isLoggedIn}><SaveIcon /></ButtonAction>
+        <ButtonAction mainColor="purple" nameAction="download" disabled={isPending || !isLoggedIn} loggedIn={isLoggedIn}><DownloadIcon /></ButtonAction>
+        <ButtonAction mainColor="pink" nameAction="share" disabled={isPending || !isLoggedIn} loggedIn={isLoggedIn}><ShareIcon /></ButtonAction>
+        </div>
+        <div className="flex justify-center items-center">
+            <h2 className="text-xl font-[var(--font-playfair)] text-zinc-100 ">Dream Interpretation</h2>
+        </div>
         <div className="flex justify-center items-center">
             <h2 className="text-xl font-[var(--font-playfair)] text-zinc-100 ">{dreamResult?.title}</h2>
         </div>
