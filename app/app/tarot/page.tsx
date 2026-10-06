@@ -13,6 +13,7 @@ import UsageMeter from "@/components/app/UsageMeter";
 import { TarotThreeForm } from "@/components/app/ReadingForms";
 import { dailyTarotAction } from "@/actions/readings";
 import Paywall from "@/components/sections/Paywall";
+import ShareButton from "@/components/share/ShareButton";
 import { isPaid } from "@/lib/plans";
 import { MAJOR_ARCANA } from "@/lib/mystic/tarot";
 import { Lock } from "lucide-react";
@@ -38,6 +39,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ r
 
       <section>
         <SectionTitle sub="Gratuita e estável: a mesma carta o dia inteiro.">Carta do dia · {formatDateBR(date, { dateStyle: "long" })}</SectionTitle>
+        {daily && <div className="mb-3 flex justify-end"><ShareButton kind="tarot" params={{ id: daily.id }} user={user} label="Postar minha carta" /></div>}
         {daily ? (
           <TarotView
             output={daily.output as unknown as TarotOutput}
@@ -63,7 +65,12 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ r
             preview={<div className="grid grid-cols-3 gap-4">{MAJOR_ARCANA.slice(17, 20).map((c) => <div key={c.id} className="flex h-40 items-center justify-center rounded-xl border border-purple-400/40 bg-indigo-900/60 text-5xl">{c.symbol}</div>)}</div>}
           />
         )}
-        {shown && <TarotView output={shown.output as unknown as TarotOutput} />}
+        {shown && (
+          <div className="space-y-3">
+            <div className="flex justify-end"><ShareButton kind="tarot" params={{ id: shown.id }} user={user} label="Postar minha tiragem" /></div>
+            <TarotView output={shown.output as unknown as TarotOutput} />
+          </div>
+        )}
         {history.length > 0 && (
           <div>
             <p className="mb-2 text-sm font-semibold text-zinc-400">Tiragens recentes</p>

@@ -9,6 +9,7 @@ import Card from "@/components/ui/Card";
 import UsageMeter from "@/components/app/UsageMeter";
 import { NumerologyReadingButton } from "@/components/app/ReadingForms";
 import Paywall from "@/components/sections/Paywall";
+import ShareButton from "@/components/share/ShareButton";
 
 export const metadata: Metadata = { title: "Numerologia" };
 
@@ -48,7 +49,12 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ r
 
       {profile && (
         <div className="space-y-4 animate-fade-in">
-          {out && <Card><p className="leading-relaxed text-zinc-200">{out.reading.summary}</p></Card>}
+          {out && reading && (
+            <Card>
+              <p className="leading-relaxed text-zinc-200">{out.reading.summary}</p>
+              <div className="mt-4 flex justify-end"><ShareButton kind="numerology" params={{ id: reading.id }} user={user} label="Postar meu número" /></div>
+            </Card>
+          )}
           <div className="grid gap-4 sm:grid-cols-2">
             {ITEMS.map((it) => (
               <Card key={it.key}>

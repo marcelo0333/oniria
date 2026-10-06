@@ -77,3 +77,12 @@
 - **Stripe**: e-mails de contestação, de falha de webhook e de repasse.
 - **UptimeRobot**: site fora do ar.
 - **Railway/Render**: alerta de gasto acima do esperado.
+
+## 6. Marketing orgânico com pouco esforço (já embutido no app)
+
+- **Kit de conteúdo do dia** (`/app/conteudo`, só para admin): os 12 horóscopos do dia, o "símbolo de sonho do dia" e o "casal do dia" prontos em formato Stories/Reels/TikTok (9:16), com botão de baixar. Para virar admin, rode uma vez no banco: `UPDATE "User" SET role='ADMIN' WHERE email='seu@email.com';`
+  - Rotina sugerida: baixar 2–3 imagens por dia e postar nos Stories/TikTok com música; leva ~10 minutos.
+  - A mesma página mostra quantas imagens foram compartilhadas e quantos cadastros vieram de compartilhamentos (últimos 30 dias).
+- **Usuários divulgam por você**: em sonho, Big 3, carta do dia, compatibilidade, numerologia, Revolução Solar, horóscopo e símbolos há o botão **Compartilhar**. Ele gera uma imagem 9:16 ou 4:5 com a marca e o endereço do site; no celular, abre direto o Instagram, o TikTok ou o WhatsApp.
+- **Indique e ganhe** (`/app/indique`): todo link compartilhado leva o código da pessoa. Quem indicou ganha 2 interpretações quando o indicado faz o 1º pagamento. A recompensa só acontece no pagamento, o que evita fraude com contas falsas.
+- **SEO**: além de signos e símbolos, agora existem as páginas `/compatibilidade/<signo>/<signo>` (78 combinações, como "compatibilidade leão e sagitário"), que são buscas muito populares.

@@ -10,6 +10,7 @@ import Card, { SectionTitle } from "@/components/ui/Card";
 import UsageMeter from "@/components/app/UsageMeter";
 import { CompatReadingButton } from "@/components/app/ReadingForms";
 import Paywall from "@/components/sections/Paywall";
+import ShareButton from "@/components/share/ShareButton";
 
 export const metadata: Metadata = { title: "Compatibilidade de signos" };
 
@@ -51,6 +52,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ a
             <h2 className="mt-2 text-2xl font-semibold">{a.name} e {b.name}</h2>
             <p className="gradient-text mt-1 text-5xl font-bold">{preview.score}%</p>
             <p className="mt-1 text-sm text-zinc-400">{preview.aspect.name}: {preview.aspect.note}</p>
+            <div className="mt-4 flex justify-center"><ShareButton kind="compat" params={{ a: a.slug, b: b.slug }} user={user} label="Postar nosso resultado" variant="primary" /></div>
           </Card>
           <Card className="space-y-3">
             <Bar label="Amor" value={preview.breakdown.love} />

@@ -47,6 +47,13 @@ export default function Page() {
             <li>Créditos são pessoais, não transferíveis e não conversíveis em dinheiro. Se a geração falhar por erro nosso, o crédito é devolvido automaticamente.</li>
           </ul>
 
+          <h3>4.2 Indique e ganhe</h3>
+          <ul>
+            <li>Ao compartilhar conteúdo da Oniria, o link leva um código pessoal. Quem se cadastrar por ele em até 30 dias fica vinculado a você.</li>
+            <li>Quando a pessoa indicada fizer o primeiro pagamento (assinatura ou consulta avulsa), você recebe créditos de interpretação de sonho, uma única vez por pessoa indicada.</li>
+            <li>Indicações fraudulentas (contas falsas, autoindicação, pagamentos estornados) não geram créditos e podem levar à remoção dos créditos e à suspensão da conta.</li>
+          </ul>
+
           <h2>5. Arrependimento e reembolso</h2>
           <p>Em contratações online, você pode desistir em até <strong>7 dias</strong> corridos (art. 49 do Código de Defesa do Consumidor), com reembolso integral, <strong>diretamente no aplicativo</strong>:</p>
           <ul>

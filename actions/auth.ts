@@ -12,6 +12,7 @@ import { consumeToken, issueToken } from "@/lib/tokens";
 import { sendPasswordResetEmail, sendVerificationEmail } from "@/lib/email";
 import { logger } from "@/lib/logger";
 import { safeNext } from "@/lib/safe-next";
+import { attributeSignup } from "@/lib/referrals";
 
 async function ip() {
   const h = await headers();
@@ -40,6 +41,7 @@ export async function signup(_: FormState, formData: FormData): Promise<FormStat
       data: { name, email, password: await bcrypt.hash(password, 12), termsAcceptedAt: new Date() },
     });
     userId = user.id;
+    await attributeSignup(user.id).catch((e) => logger.warn("Falha na atribuição do cadastro", { error: String(e) }));
     await createSession({ userId: user.id, email: user.email, name: user.name, v: user.tokenVersion });
     const token = await issueToken(user.id, "VERIFY_EMAIL");
     await sendVerificationEmail(user.email, user.name, token);

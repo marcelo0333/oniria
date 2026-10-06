@@ -7,6 +7,7 @@ import type { CurrentUser } from "./auth";
 import { PLANS } from "./plans";
 import { sendSubscriptionEmail } from "./email";
 import { logger } from "./logger";
+import { rewardReferrer } from "./referrals";
 
 let stripe: Stripe | null = null;
 
@@ -111,6 +112,7 @@ export async function syncSubscription(sub: Stripe.Subscription) {
       cancelAtPeriodEnd: !ended && (sub.cancel_at_period_end || !!sub.cancel_at),
     },
   });
+  if (sub.status === "active" && !user.subscriptionPaidAt) await rewardReferrer(user.id); // 1º pagamento da assinatura
   if (!ended && plan && ["active", "trialing"].includes(sub.status) && !wasPaid) {
     await sendSubscriptionEmail(user.email, PLANS[plan].name);
   }

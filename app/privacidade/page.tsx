@@ -51,7 +51,7 @@ export default function Page() {
           <p>Se você gerar um link público de um sonho, qualquer pessoa com o link verá o título, a interpretação e as imagens daquele sonho (nunca seu e-mail). Você pode revogar o link quando quiser.</p>
 
           <h2>6. Cookies</h2>
-          <p>Usamos apenas um cookie essencial de sessão (<code>oniria_session</code>, httpOnly), necessário para manter você conectado(a). Não usamos cookies de publicidade. Se adicionarmos ferramentas de análise, este documento será atualizado e solicitaremos consentimento quando necessário.</p>
+          <p>Usamos um cookie essencial de sessão (<code>oniria_session</code>, httpOnly), necessário para manter você conectado(a), e, quando você chega por um link compartilhado por alguém, cookies de origem (<code>oniria_via</code> e <code>oniria_src</code>, 30 dias) que registram quem indicou — usados só para o programa “Indique e ganhe”. Também contamos, sem identificar o conteúdo, quantas imagens de compartilhamento são geradas. Não usamos cookies de publicidade. Se adicionarmos ferramentas de análise, este documento será atualizado e solicitaremos consentimento quando necessário.</p>
 
           <h2>7. Retenção</h2>
           <p>Mantemos seus dados enquanto sua conta existir. Ao excluir a conta, apagamos seus dados em até 30 dias, exceto registros que devamos guardar por obrigação legal (ex.: registros de compras e notas fiscais, por até 5 anos — desvinculados do seu perfil) ou para defesa em processos.</p>

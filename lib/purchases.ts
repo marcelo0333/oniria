@@ -6,6 +6,7 @@ import type { CurrentUser } from "./auth";
 import { ensureCustomer, getStripe } from "./stripe";
 import { PRODUCT_BY_ID, formatCents, priceFor } from "./products";
 import { safeNext } from "./safe-next";
+import { rewardReferrer } from "./referrals";
 import { logger } from "./logger";
 import { sendPurchaseEmail } from "./email";
 
@@ -70,6 +71,7 @@ export async function fulfillCheckoutSession(session: Stripe.Checkout.Session): 
   const user = result.userId ? await prisma.user.findUnique({ where: { id: result.userId }, select: { email: true } }) : null;
   const product = PRODUCT_BY_ID[result.productId];
   if (user && product) await sendPurchaseEmail(user.email, product.name, formatCents(result.amount), product.href);
+  if (result.userId) await rewardReferrer(result.userId); // 1º pagamento do indicado (no-op se já recompensado)
   return "granted";
 }
 

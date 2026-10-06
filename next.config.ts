@@ -12,6 +12,8 @@ const nextConfig: NextConfig = {
   output: process.env.NEXT_OUTPUT === "standalone" ? "standalone" : undefined,
   poweredByHeader: false,
   serverExternalPackages: ["bcrypt", "pg"],
+  // fontes lidas em tempo de execução pelas imagens de compartilhamento (necessário no build standalone)
+  outputFileTracingIncludes: { "/api/share/[kind]": ["./assets/fonts/**"] },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

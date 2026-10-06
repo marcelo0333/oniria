@@ -84,6 +84,14 @@ model User {
   subscriptionPaidAt   DateTime? // 1ª cobrança paga da assinatura (início da garantia de 7 dias)
   guaranteeUsedAt      DateTime? // garantia de 7 dias já usada (1 por pessoa)
 
+  // Indicação / atribuição de origem (compartilhamentos)
+  referralCode       String?   @unique // código pessoal usado nos links compartilhados (?via=)
+  referredById       String?
+  referredBy         User?     @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referrals          User[]    @relation("Referrals")
+  signupSource       String? // ex.: "share:dream", "share:compat" (de onde veio o cadastro)
+  referralRewardedAt DateTime? // quem indicou já foi recompensado por este usuário
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -93,6 +101,7 @@ model User {
   tokens    AuthToken[]
   credits   CreditBalance[]
   purchases Purchase[]
+  shares    ShareEvent[]
 }
 
 model Dream {
@@ -217,4 +226,17 @@ model Purchase {
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([userId, createdAt])
+}
+
+/// Imagem de compartilhamento gerada/baixada (métrica de marketing orgânico).
+model ShareEvent {
+  id        String   @id @default(uuid())
+  kind      String // dream, big3, tarot, compat, solar, numerology, horoscope, symbol
+  format    String // story | feed
+  createdAt DateTime @default(now())
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([kind, createdAt])
 }

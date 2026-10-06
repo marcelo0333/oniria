@@ -6,6 +6,7 @@ import { env } from "@/lib/env";
 import { formatDateBR } from "@/lib/dates";
 import { effectivePlan, isPaid, PLANS } from "@/lib/plans";
 import UpgradeBanner from "@/components/sections/UpgradeBanner";
+import ShareButton from "@/components/share/ShareButton";
 import type { CurrentUser } from "@/lib/auth";
 import { emotionLabel, typeLabel } from "@/lib/constants";
 import Paywall from "@/components/sections/Paywall";
@@ -57,7 +58,10 @@ export default function DreamPage({ dream, user, available = false }: { dream: D
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-zinc-500">
         <span>{formatDateBR(dream.createdAt, { dateStyle: "long", timeStyle: "short" })} · {typeLabel(dream.type)} · {emotionLabel(dream.emotion)}</span>
-        <DreamClient dreamId={dream.id} title={dream.title} isFavorite={dream.isFavorite} shareToken={dream.shareToken} appUrl={env.appUrl} />
+        <div className="flex flex-wrap items-center gap-2">
+          <ShareButton kind="dream" params={{ id: dream.id }} user={user} label="Postar nas redes" variant="primary" />
+          <DreamClient dreamId={dream.id} title={dream.title} isFavorite={dream.isFavorite} shareToken={dream.shareToken} appUrl={env.appUrl} />
+        </div>
       </div>
       <DreamComponent dream={{ ...dream, interpretation: dream.interpretation, keySymbolism: dream.keySymbolism ?? "", images, lockedImage }} />
       {!isPaid(user) && <UpgradeBanner user={user} headline="Gostou? Interprete todos os seus sonhos com o plano Místico" />}

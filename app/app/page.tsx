@@ -9,6 +9,7 @@ import { getHoroscope } from "@/lib/services/horoscope";
 import { usageSummary } from "@/lib/usage";
 import { effectivePlan, PLANS, isPaid, isTrialing } from "@/lib/plans";
 import UpgradeBanner from "@/components/sections/UpgradeBanner";
+import ShareButton from "@/components/share/ShareButton";
 import { Lock } from "lucide-react";
 import type { TarotOutput } from "@/lib/services/readings";
 import MoonCard from "@/components/mystic/MoonCard";
@@ -81,7 +82,10 @@ export default async function Dashboard() {
       </Link>
 
       {sign && horoscope ? (
-        <HoroscopeCard sign={sign} content={horoscope} title={`Seu horóscopo de hoje · ${sign.name}`} />
+        <div className="space-y-3">
+          <HoroscopeCard sign={sign} content={horoscope} title={`Seu horóscopo de hoje · ${sign.name}`} />
+          <div className="flex justify-end"><ShareButton kind="horoscope" params={{ sign: sign.slug }} user={user} label="Postar meu horóscopo" /></div>
+        </div>
       ) : (
         <Card className="text-center">
           <p className="mb-3 text-zinc-300">Informe sua data de nascimento para receber o horóscopo do seu signo todos os dias.</p>
@@ -91,6 +95,7 @@ export default async function Dashboard() {
 
       <section>
         <SectionTitle sub="Uma carta, uma mensagem para o seu dia.">Carta do dia</SectionTitle>
+        {daily && <div className="mb-3 flex justify-end"><ShareButton kind="tarot" params={{ id: daily.id }} user={user} label="Postar minha carta" /></div>}
         {daily ? (
           <TarotView
             output={daily.output as unknown as TarotOutput}

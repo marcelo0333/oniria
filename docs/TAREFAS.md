@@ -86,6 +86,14 @@ Legenda: `[x]` concluído · `[ ]` pendente. Cada fase = 1+ commits na branch `c
 - [x] T8.26 Guia `OPERACAO_SOLO.md`: CPF/carnê-leão, quando abrir CNPJ, hospedagem enxuta, rotina e respostas prontas
 - [x] T8.27 E2E de pagamentos com Stripe falso: compra → retorno → desbloqueio → reembolso → garantia
 
+## Fase 8.4 — Recomendação passiva (marketing orgânico)
+- [x] T8.28 Imagens de compartilhamento geradas no servidor: Stories/Reels/TikTok (1080×1920) e Feed (1080×1350), com marca e endereço
+- [x] T8.29 Cartões: sonho (com a imagem), Big 3, carta do dia/tiragem, compatibilidade, Revolução Solar, numerologia, horóscopo, símbolo
+- [x] T8.30 Menu de compartilhar: compartilhamento nativo (abre Instagram/TikTok/WhatsApp no celular), baixar, WhatsApp, X, Facebook, copiar link
+- [x] T8.31 Atribuição por link (`?via=` + cookie 30 dias), origem do cadastro e "Indique e ganhe" (créditos no 1º pagamento do indicado)
+- [x] T8.32 Páginas públicas de compatibilidade (78 pares, SEO) e kit de conteúdo diário para o admin
+- [x] T8.33 Privacidade: imagens pessoais só para o dono; métricas de compartilhamento sem guardar conteúdo
+
 ## Fase 9 — Go-live (checklist fora do código, ver `GO_LIVE.md`) — depende de você: empresa, contas e chaves
 - [ ] T9.1 Empresa/CNPJ, conta bancária PJ, Stripe ativado
 - [ ] T9.2 Domínio, DNS, e-mail remetente (SPF/DKIM/DMARC)
@@ -94,7 +102,7 @@ Legenda: `[x]` concluído · `[ ]` pendente. Cada fase = 1+ commits na branch `c
 - [ ] T9.5 Teste de compra real, monitoramento, backup, lançamento
 
 ## Notas de execução
-- Tudo das Fases 1–8.2 está implementado e verificado: lint, typecheck, build, 70 testes (unitários + Postgres real, incluindo 20 requisições simultâneas na cota) e e2e completo com 37 verificações (funil grátis → paywalls → sonho bloqueado → desbloqueio por crédito → assinante; logout; reset de senha; verificação de e-mail; exclusão de conta; webhook Stripe assinado e idempotente para assinaturas e compras avulsas — cartão, Pix assíncrono, falha, expiração e reembolso).
+- Tudo das Fases 1–8.2 está implementado e verificado: lint, typecheck, build, 74 testes (unitários + Postgres real, incluindo 20 requisições simultâneas na cota) e e2e completo com 37 verificações (funil grátis → paywalls → sonho bloqueado → desbloqueio por crédito → assinante; logout; reset de senha; verificação de e-mail; exclusão de conta; webhook Stripe assinado e idempotente para assinaturas e compras avulsas — cartão, Pix assíncrono, falha, expiração e reembolso).
 - Não foi possível validar nesta sandbox: build real da imagem Docker (sem daemon; o modo `standalone` foi validado rodando `node .next/standalone/server.js`), chamadas reais ao Gemini/Pollinations/Stripe/Resend (sem chaves/rede) — cobertas por servidor Gemini falso e eventos Stripe assinados localmente.
 - Fase 9 só pode ser concluída por você (CNPJ, banco, Stripe live, domínio, chaves) — passo a passo em `GO_LIVE.md`.
 

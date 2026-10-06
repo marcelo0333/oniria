@@ -9,6 +9,8 @@ import { SIGNS, SIGN_BY_SLUG } from "@/lib/mystic/signs";
 import { compatibility } from "@/lib/mystic/compat";
 import { getHoroscope } from "@/lib/services/horoscope";
 import { todayBR, formatDateBR } from "@/lib/dates";
+import ShareButton from "@/components/share/ShareButton";
+import { getCurrentUser } from "@/lib/auth";
 
 // Horóscopo do dia + sessão no header: renderizado sob demanda (o horóscopo fica em cache no banco).
 export const dynamic = "force-dynamic";
@@ -45,6 +47,7 @@ export default async function Page({ params }: { params: Promise<{ sign: string 
         </header>
 
         <HoroscopeCard sign={sign} content={horoscope} title={`Horóscopo de hoje para ${sign.name}`} />
+        <div className="mt-3 flex justify-end"><ShareButton kind="horoscope" params={{ sign: sign.slug }} user={await getCurrentUser()} label="Compartilhar o horóscopo" /></div>
 
         <div className="mt-8 space-y-6">
           <Card><SectionTitle>Quem é {sign.name}</SectionTitle><p className="leading-relaxed text-zinc-300">{sign.description}</p><p className="mt-3 text-sm text-zinc-400">Palavras-chave: {sign.keywords.join(", ")}.</p></Card>

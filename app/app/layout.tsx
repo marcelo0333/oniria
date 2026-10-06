@@ -25,11 +25,11 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
                 {plan === "FREE" && <Link href="/precos" className="text-xs text-purple-300 hover:underline">Fazer upgrade</Link>}
               </div>
             </div>
-            <AppNav variant="desktop" />
+            <AppNav variant="desktop" isAdmin={user.role === "ADMIN"} />
           </div>
         </aside>
         <div className="min-w-0 flex-1">
-          <AppNav variant="mobile" />
+          <AppNav variant="mobile" isAdmin={user.role === "ADMIN"} />
           {!user.emailVerifiedAt && <VerifyBanner />}
           {children}
         </div>

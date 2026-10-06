@@ -11,6 +11,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import ActionButton from "@/components/app/ActionButton";
 import UsageMeter from "@/components/app/UsageMeter";
 import Paywall from "@/components/sections/Paywall";
+import ShareButton from "@/components/share/ShareButton";
 import { isPaid } from "@/lib/plans";
 import { solarReturnAction } from "@/actions/readings";
 
@@ -58,6 +59,7 @@ export default async function Page() {
           <Card className="text-center">
             <p className="text-xs uppercase tracking-widest text-zinc-500">O tema do seu ano</p>
             <h2 className="gradient-text mt-2 text-3xl font-semibold">{out.reading.theme}</h2>
+            {latest && <div className="mt-4 flex justify-center"><ShareButton kind="solar" params={{ id: latest.id }} user={user} label="Postar o tema do meu ano" variant="primary" /></div>}
           </Card>
           <Card><p className="whitespace-pre-line leading-relaxed text-zinc-200">{out.reading.overview}</p></Card>
           <div className="grid gap-4 sm:grid-cols-2">

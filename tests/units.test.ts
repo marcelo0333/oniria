@@ -135,3 +135,20 @@ describe("reembolso self-service", async () => {
     expect(guaranteeEligible({ ...u, subscriptionStatus: "trialing" }, now)).toBe(false); // no teste ainda não houve cobrança
   });
 });
+
+describe("compartilhamento", async () => {
+  const { clip } = await import("@/lib/share/card");
+  const { isReferralCode } = await import("@/lib/referrals");
+  it("corta texto no fim de frase ou palavra", () => {
+    expect(clip("Curto.", 50)).toBe("Curto.");
+    expect(clip("Primeira frase completa aqui. Segunda frase que passa do limite", 40)).toBe("Primeira frase completa aqui.");
+    expect(clip("palavra ".repeat(20), 30).endsWith("…")).toBe(true);
+  });
+  it("valida o formato do código de indicação", () => {
+    expect(isReferralCode("abc2def")).toBe(true);
+    expect(isReferralCode("ABC2DEF")).toBe(false);
+    expect(isReferralCode("abc")).toBe(false);
+    expect(isReferralCode("abc1def")).toBe(false); // '1' é ambíguo e não é gerado
+    expect(isReferralCode(undefined)).toBe(false);
+  });
+});

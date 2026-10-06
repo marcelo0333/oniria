@@ -10,4 +10,4 @@ POLLINATIONS_BASE_URL=http://localhost:4010 STRIPE_API_BASE=http://localhost:402
 N=$!
 trap 'kill $G $S $N 2>/dev/null' EXIT
 for i in $(seq 1 30); do curl -sf localhost:3000/api/health >/dev/null && break; sleep 1; done
-node tests/e2e/smoke.mjs && node tests/e2e/auth-flow.mjs && node tests/e2e/stripe-webhook.mjs && node tests/e2e/payments.mjs
+node tests/e2e/smoke.mjs && node tests/e2e/auth-flow.mjs && node tests/e2e/stripe-webhook.mjs && node tests/e2e/payments.mjs && node tests/e2e/sharing.mjs

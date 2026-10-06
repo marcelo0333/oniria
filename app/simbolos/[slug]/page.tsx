@@ -6,6 +6,8 @@ import Card from "@/components/ui/Card";
 import { ButtonLink } from "@/components/ui/Button";
 import { DREAM_SYMBOLS, SYMBOL_BY_SLUG } from "@/lib/mystic/symbols";
 import { appUrl } from "@/lib/site";
+import ShareButton from "@/components/share/ShareButton";
+import { getCurrentUser } from "@/lib/auth";
 
 export function generateStaticParams() {
   return DREAM_SYMBOLS.map((s) => ({ slug: s.slug }));
@@ -36,6 +38,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
         <nav className="mb-4 text-sm"><Link href="/simbolos" className="text-zinc-500 hover:text-zinc-300">← Significado dos sonhos</Link></nav>
         <h1 className="text-4xl font-semibold sm:text-5xl">{s.title}</h1>
         <p className="mt-3 text-lg text-zinc-300">{s.summary}</p>
+        <div className="mt-4"><ShareButton kind="symbol" params={{ slug: s.slug }} user={await getCurrentUser()} label="Compartilhar" /></div>
         <div className="mt-8 space-y-6">
           <Card><h2 className="mb-3 text-xl font-semibold">O que pode significar</h2><ul className="list-disc space-y-2 pl-5 text-zinc-300">{s.meanings.map((m) => <li key={m}>{m}</li>)}</ul></Card>
           <Card><h2 className="mb-3 text-xl font-semibold">Olhar psicológico</h2><p className="leading-relaxed text-zinc-300">{s.psychological}</p></Card>

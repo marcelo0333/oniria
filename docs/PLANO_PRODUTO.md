@@ -77,6 +77,9 @@ O produto é feito para **pagantes**. O grátis existe só para provar valor e l
 - **Sem plano de luxo**: o antigo Oráculo foi removido. Ele prometia suporte prioritário (inviável sem equipe) e limites que comiam a margem.
 - **Suporte enxuto**: tudo é autoatendimento (portal Stripe, exportar/excluir dados, FAQ). O e-mail responde em até 3 dias úteis.
 
+### Recomendação passiva (marketing orgânico)
+Cada resultado vira uma **imagem pronta para Stories/Reels/TikTok e Feed**, com a marca e o link da Oniria. O link leva o código da pessoa, para **Indique e ganhe**: ela ganha créditos quando o indicado paga. A compatibilidade e o horóscopo podem ser compartilhados **sem custo de IA**, inclusive por quem usa o plano grátis. As 78 páginas públicas de compatibilidade e o kit de conteúdo diário do admin alimentam o SEO e as redes.
+
 ### Gatilhos de compra implementados
 1. **Sonho bloqueado**: depois da degustação, a pessoa escreve o sonho, ele é salvo e a interpretação aparece desfocada com "Testar 3 dias grátis" e "Desbloquear só esta · R$ 4,90". O esforço de escrever já foi investido.
 2. **Prévias grátis sem custo**: pontuação de compatibilidade, números da numerologia, mapa calculado, carta do dia. O cálculo é determinístico (custo zero) e a leitura por IA fica atrás do paywall.

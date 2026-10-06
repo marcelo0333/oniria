@@ -28,7 +28,7 @@ Para testar pagamentos: `stripe listen --forward-to localhost:3000/api/stripe/we
 | `npm run dev` / `build` / `start` | Next.js |
 | `npm run lint` / `typecheck` | ESLint / TypeScript |
 | `npm test` | Vitest (unitários + integração com Postgres se `DATABASE_URL` existir) |
-| `bash tests/e2e/run.sh` | E2E: funil grátis/pago, contas, webhooks, compra avulsa e reembolsos (Chromium + Gemini e Stripe falsos). Requer `npm run build` antes |
+| `bash tests/e2e/run.sh` | E2E: funil grátis/pago, contas, webhooks, compra avulsa, reembolsos, compartilhamento e indicação (Chromium + Gemini e Stripe falsos). Requer `npm run build` antes |
 | `npm run db:migrate` | `prisma migrate deploy` (produção) |
 | `node scripts/stripe-setup.mjs` | Cria produtos/preços/portal/webhook no Stripe |
 
@@ -46,6 +46,7 @@ tests/               vitest + e2e (playwright)
 
 ## Decisões importantes
 - **Modelo paid-first**: grátis é uma degustação única (1 sonho) + prévias de custo zero; tudo com custo de IA fica atrás de paywall. **Duas formas de comprar**: plano único Místico (teste grátis com cartão) e **consultas avulsas** com pagamento único (Pix/cartão) que viram créditos — catálogo em `lib/products.ts`, fluxo em `lib/purchases.ts`.
+- **Recomendação passiva**: imagens de compartilhamento geradas no servidor (`/api/share/<tipo>`, `lib/share/`) em 9:16 e 4:5; links com indicação (`?via=`) e recompensa no 1º pagamento do indicado (`lib/referrals.ts`).
 - **Plano do usuário vem sempre do webhook do Stripe** (`lib/stripe.ts#syncSubscription`); `effectivePlan` rebaixa assinaturas vencidas/canceladas.
 - **Cotas atômicas**: `reserveUsage` serializa por usuário+recurso com lock consultivo do Postgres (testado com 20 requisições simultâneas: nenhuma falha, nenhum estouro); usa a cota do plano e depois créditos avulsos; `refundUsage` devolve ao lugar certo se a IA falhar.
 - **Chaves de IA nunca vão ao browser**: imagens passam por `/api/image` com URL assinada (HMAC) e cache de CDN.

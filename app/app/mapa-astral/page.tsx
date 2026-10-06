@@ -9,6 +9,7 @@ import ActionButton from "@/components/app/ActionButton";
 import UsageMeter from "@/components/app/UsageMeter";
 import { astralAction } from "@/actions/readings";
 import Paywall from "@/components/sections/Paywall";
+import ShareButton from "@/components/share/ShareButton";
 import { isPaid } from "@/lib/plans";
 import { formatDateBR } from "@/lib/dates";
 
@@ -49,6 +50,7 @@ export default async function Page() {
         {!chart.hasExactTime && <p className="mt-2 text-sm text-amber-300">Adicione hora e cidade de nascimento no perfil para calcular ascendente e casas.</p>}
       </header>
 
+      <div className="flex justify-end"><ShareButton kind="big3" params={{}} user={user} label="Postar meu Big 3" variant="primary" /></div>
       <ChartView chart={chart} />
 
       <section className="space-y-4">
