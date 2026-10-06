@@ -54,7 +54,7 @@ try {
   const refundBtns = page.locator('button:has-text("Pedir reembolso")');
   ok("compra não usada mostra 'Pedir reembolso'; a usada não", (await refundBtns.count()) === 1);
   await refundBtns.first().click();
-  await page.waitForSelector("text=Reembolso solicitado", { timeout: 15000 });
+  await page.waitForSelector("text=/reembolso (integral )?solicitado/i", { timeout: 15000 });
   const solar = (await q(`SELECT status FROM "Purchase" WHERE "userId"=$1 AND "productId"='revolucao-solar'`, [user.id]))[0];
   const bal = (await q(`SELECT balance FROM "CreditBalance" WHERE "userId"=$1 AND kind='SOLAR_RETURN'`, [user.id]))[0];
   const refunds = await (await fetch(`${STRIPE}/__refunds`)).json();
@@ -66,17 +66,17 @@ try {
   ok("fora do prazo de 7 dias não há botão de reembolso", (await page.locator('button:has-text("Pedir reembolso")').count()) === 0);
 
   // garantia de 7 dias da assinatura
-  await q(`UPDATE "User" SET plan='MISTICO', "subscriptionStatus"='active', "stripeSubscriptionId"='sub_fake_1', "subscriptionPaidAt"=now() - interval '1 day', "currentPeriodEnd"=now() + interval '29 days' WHERE id=$1`, [user.id]);
+  await q(`UPDATE "User" SET plan='MISTICO', "subscriptionStatus"='active', "stripeSubscriptionId"='sub_' || md5(random()::text), "subscriptionPaidAt"=now() - interval '1 day', "currentPeriodEnd"=now() + interval '29 days' WHERE id=$1`, [user.id]);
   await page.goto(`${BASE}/app/assinatura`);
   ok("assinante recente vê a garantia de 7 dias", (await page.locator("text=Garantia de 7 dias").count()) > 0);
   await page.click('button:has-text("Cancelar e receber reembolso")');
-  await page.waitForSelector("text=Reembolso solicitado", { timeout: 15000 });
+  await page.waitForSelector("text=/reembolso (integral )?solicitado/i", { timeout: 15000 });
   const u = (await q(`SELECT plan, "subscriptionStatus", "guaranteeUsedAt" FROM "User" WHERE id=$1`, [user.id]))[0];
   const refunds2 = await (await fetch(`${STRIPE}/__refunds`)).json();
   ok("garantia: assinatura cancelada, plano FREE e 1ª cobrança reembolsada", u.plan === "FREE" && u.subscriptionStatus === "canceled" && !!u.guaranteeUsedAt && refunds2.some((r) => r.payment_intent === "pi_sub_first"));
   ok("não reembolsou o pagamento de consulta avulsa por engano", !refunds2.some((r) => r.payment_intent === "pi_avulsa_x"));
 
-  await q(`UPDATE "User" SET plan='MISTICO', "subscriptionStatus"='active', "stripeSubscriptionId"='sub_fake_2' WHERE id=$1`, [user.id]);
+  await q(`UPDATE "User" SET plan='MISTICO', "subscriptionStatus"='active', "stripeSubscriptionId"='sub_' || md5(random()::text) WHERE id=$1`, [user.id]);
   await page.goto(`${BASE}/app/assinatura`);
   ok("garantia vale uma vez por pessoa", (await page.locator("text=Garantia de 7 dias").count()) === 0);
 } catch (e) {

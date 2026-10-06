@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ImageFull from "@/components/ui/ImageFull";
 import Loader from "@/components/ui/Loader";
 
@@ -8,6 +8,15 @@ export default function DreamImage({ src, title }: { src: string; title: string 
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const [open, setOpen] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  // imagem que já veio do cache antes da hidratação não dispara onLoad: confere no mount
+  useEffect(() => {
+    const img = imgRef.current;
+    if (!img?.complete) return;
+    const id = requestAnimationFrame(() => setState(img.naturalWidth > 0 ? "ready" : "error"));
+    return () => cancelAnimationFrame(id);
+  }, [attempt]);
 
   return (
     <figure className="flex flex-col items-center">
@@ -23,6 +32,7 @@ export default function DreamImage({ src, title }: { src: string; title: string 
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           key={attempt}
+          ref={imgRef}
           src={attempt ? `${src}&r=${attempt}` : src}
           alt={title}
           onLoad={() => setState("ready")}

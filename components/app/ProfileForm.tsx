@@ -11,7 +11,7 @@ type Props = {
   user: { name: string; birthDate: string | null; birthTime: string | null; birthPlace: string | null; birthLat: number | null; birthLon: number | null; birthTz: string | null; dailyEmail: boolean };
 };
 
-export default function ProfileForm({ user }: Props) {
+export default function ProfileForm({ user, today }: Props & { today: string }) {
   const [state, action] = useActionState(updateProfile, undefined);
   const [place, setPlace] = useState({ label: user.birthPlace ?? "", lat: user.birthLat?.toString() ?? "", lon: user.birthLon?.toString() ?? "", tz: user.birthTz ?? "" });
   const [results, setResults] = useState<Place[]>([]);
@@ -26,7 +26,7 @@ export default function ProfileForm({ user }: Props) {
       <fieldset className="space-y-4 rounded-xl border border-white/10 p-4">
         <legend className="px-2 text-sm font-semibold text-purple-200">Dados de nascimento (mapa astral)</legend>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Input label="Data de nascimento" name="birthDate" type="date" defaultValue={user.birthDate ?? ""} max={new Date().toISOString().slice(0, 10)} error={state?.errors?.birthDate} />
+          <Input label="Data de nascimento" name="birthDate" type="date" defaultValue={user.birthDate ?? ""} max={today} error={state?.errors?.birthDate} />
           <Input label="Hora de nascimento (opcional)" name="birthTime" type="time" defaultValue={user.birthTime ?? ""} hint="Necessária para ascendente e casas." error={state?.errors?.birthTime} />
         </div>
         <div className="space-y-2">

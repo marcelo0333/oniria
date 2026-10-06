@@ -15,7 +15,7 @@ const ok = (name, cond, extra = "") => { results.push({ name, pass: !!cond, extr
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH ?? "/opt/pw-browsers/chromium-1194/chrome-linux/chrome", args: ["--no-sandbox"] });
 const page = await (await browser.newContext({ viewport: { width: 1280, height: 900 } })).newPage();
 const errors = [];
-page.on("pageerror", (e) => errors.push(e.message));
+page.on("pageerror", (e) => errors.push(`${page.url()} → ${e.message.slice(0, 120)}`));
 
 try {
   await page.goto(BASE);

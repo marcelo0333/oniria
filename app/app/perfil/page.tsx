@@ -4,6 +4,7 @@ import Card, { SectionTitle } from "@/components/ui/Card";
 import ProfileForm from "@/components/app/ProfileForm";
 import DeleteAccount from "@/components/app/DeleteAccount";
 import { getSign } from "@/lib/mystic/signs";
+import { todayBR } from "@/lib/dates";
 
 export const metadata: Metadata = { title: "Perfil" };
 
@@ -19,7 +20,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ w
         {sign && <p className="mt-2 text-sm text-purple-200">Seu signo solar: {sign.glyph} {sign.name}</p>}
       </header>
       <Card>
-        <ProfileForm user={{ name: user.name, birthDate: user.birthDate, birthTime: user.birthTime, birthPlace: user.birthPlace, birthLat: user.birthLat, birthLon: user.birthLon, birthTz: user.birthTz, dailyEmail: user.dailyEmail }} />
+        <ProfileForm today={todayBR()} user={{ name: user.name, birthDate: user.birthDate, birthTime: user.birthTime, birthPlace: user.birthPlace, birthLat: user.birthLat, birthLon: user.birthLon, birthTz: user.birthTz, dailyEmail: user.dailyEmail }} />
       </Card>
       <Card>
         <SectionTitle sub="Seus direitos pela LGPD">Privacidade e dados</SectionTitle>
