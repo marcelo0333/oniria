@@ -1,104 +1,50 @@
-import React, { useEffect } from 'react'
-import ImageFull from './ImageFull';
-import { GenerateImage } from '@/actions/generate-image-get';
-import Loading from './Loading';
-import Loader from './Loader';
-import { DownloadIcon, SaveIcon, ShareIcon } from 'lucide-react';
-import ButtonAction from './ButtonAction';
+import Card from "./Card";
+import DreamImage from "@/components/dream/DreamImage";
 
-interface Props {
-    dreamResult: {
-        title: string;
-        interpretation: string;
-        keySymbolism: string;
-        warnings: string,
-        luckNumbers: string,
-        imagesPrompts: {
-            finalSceneImageUrl: undefined;
-            finalEmotionImageUrl: undefined;
+export type DreamView = {
+  title: string;
+  interpretation: string;
+  keySymbolism: string;
+  warnings?: string | null;
+  luckNumbers?: string | null;
+  moonPhase?: string | null;
+  astroContext?: string | null;
+  images: { src: string; title: string }[];
 };
-    }
-    onSave: () => Promise<void>;
-    isPending?: boolean;
-    isLoggedIn?: boolean;
-}
 
-export default function DreamComponent({ dreamResult, onSave, isPending, isLoggedIn }: Props  ) {
+const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+  <section>
+    <h2 className="mb-3 text-lg font-semibold text-purple-200">{title}</h2>
+    <Card>{children}</Card>
+  </section>
+);
 
-    const [openImage, setOpenImage] = React.useState<{img: string | undefined; title: string} | null>(null);
+const paragraphs = (text: string) => text.split(/\n{2,}|\n/).filter(Boolean).map((p, i) => <p key={i} className="mb-3 last:mb-0 leading-relaxed text-zinc-300">{p}</p>);
 
+export default function DreamComponent({ dream }: { dream: DreamView }) {
+  return (
+    <div className="flex flex-col gap-8 animate-fade-in">
+      <header className="text-center">
+        <h1 className="gradient-text text-3xl font-semibold sm:text-4xl">{dream.title}</h1>
+        {dream.moonPhase && <p className="mt-2 text-sm text-zinc-400">🌙 {dream.moonPhase}</p>}
+      </header>
 
-     return (
-    <div className="flex w-full flex-col gap-5 animate-fade-in">
-        <div className="flex justify-end gap-2 items-center">
-        <ButtonAction mainColor="indigo" nameAction="save" onClick={onSave} disabled={isPending || !isLoggedIn} loggedIn={isLoggedIn}><SaveIcon /></ButtonAction>
-        <ButtonAction mainColor="purple" nameAction="download" disabled={isPending || !isLoggedIn} loggedIn={isLoggedIn}><DownloadIcon /></ButtonAction>
-        <ButtonAction mainColor="pink" nameAction="share" disabled={isPending || !isLoggedIn} loggedIn={isLoggedIn}><ShareIcon /></ButtonAction>
+      {dream.images.length > 0 && (
+        <div className={`grid gap-4 ${dream.images.length > 1 ? "sm:grid-cols-2" : "mx-auto max-w-md"}`}>
+          {dream.images.map((img) => <DreamImage key={img.title} {...img} />)}
         </div>
-        <div className="flex justify-center items-center">
-            <h2 className="text-xl font-[var(--font-playfair)] text-zinc-100 ">Dream Interpretation</h2>
-        </div>
-        <div className="flex justify-center items-center">
-            <h2 className="text-xl font-[var(--font-playfair)] text-zinc-100 ">{dreamResult?.title}</h2>
-        </div>
-        <div className="bg-zinc-900/80 border border-zinc-800 rounded-lg p-6 shadow-lg">
-            <p className="text-zinc-300">{dreamResult?.interpretation}</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex flex-col items-center">
-            <h3 className="text-lg font-semibold text-zinc-100 mb-2">Dream Scene</h3>
-          {dreamResult.imagesPrompts.finalSceneImageUrl ? (
-                    <img
-                        src={dreamResult.imagesPrompts.finalSceneImageUrl}
-                        alt="Dream Scene"
-                        className="rounded-lg shadow-md cursor-zoom-in hover:opacity-90 transition"
-                        onClick={() => setOpenImage({
-                            img: dreamResult.imagesPrompts.finalSceneImageUrl,
-                            title: "Dream Scene",
-                        })}
-                    />
-                ) : <Loader />}
-            </div>
-            <div className="flex flex-col items-center">
-                <h3 className="text-lg font-semibold text-zinc-100 mb-2">Emotional Abstract</h3>
-                {dreamResult.imagesPrompts.finalEmotionImageUrl ? (
-                            <img
-                                src={dreamResult.imagesPrompts.finalEmotionImageUrl}
-                                alt="Emotional Abstract"
-                                className="rounded-lg shadow-md cursor-zoom-in hover:opacity-90 transition"
-                                onClick={() => setOpenImage({
-                                    img: dreamResult.imagesPrompts.finalEmotionImageUrl,
-                                    title: "Emotional Abstract",
-                                })}
-                            />
-                        ) : <Loader />}
-                    </div>
-                {openImage && (
-                <ImageFull
-                    img={openImage.img}
-                    title={openImage.title}
-                    onClose={() => setOpenImage(null)}
-                />
-                )}
-        </div>
-        <div className="flex justify-center items-center">
-            <h2 className="text-xl font-[var(--font-playfair)] text-zinc-100 ">Simbolism</h2>
-        </div>
-        <div className="bg-zinc-900/80 border border-zinc-800 rounded-lg p-6 shadow-lg">
-            <p className="text-zinc-300"> {dreamResult?.keySymbolism} </p>
-        </div>
-         <div className="flex justify-center items-center">
-            <h2 className="text-xl font-[var(--font-playfair)] text-zinc-100 ">Warnings</h2>
-        </div>
-        <div className="bg-zinc-900/80 border border-zinc-800 rounded-lg p-6 shadow-lg">
-            <p className="text-zinc-300"> {dreamResult?.warnings} </p>
-        </div>
-          <div className="flex justify-center items-center">
-            <h2 className="text-xl font-[var(--font-playfair)] text-zinc-100 ">Luck Numbers</h2>
-        </div>
-           <div className="bg-zinc-900/80 border border-zinc-800 rounded-lg p-6 shadow-lg">
-            <p className="text-zinc-300"> {dreamResult?.luckNumbers} </p>
-        </div>
+      )}
+
+      <Section title="Interpretação">{paragraphs(dream.interpretation)}</Section>
+      {dream.astroContext && <Section title="Os astros e o seu sonho">{paragraphs(dream.astroContext)}</Section>}
+      <Section title="Simbolismo">{paragraphs(dream.keySymbolism)}</Section>
+      {dream.warnings && <Section title="Pontos de atenção">{paragraphs(dream.warnings)}</Section>}
+      {dream.luckNumbers && (
+        <Section title="Números simbólicos">
+          <p className="text-2xl tracking-widest text-purple-200">{dream.luckNumbers}</p>
+          <p className="mt-2 text-xs text-zinc-500">Números calculados a partir do seu sonho, apenas por diversão — não são previsão nem indicação para apostas.</p>
+        </Section>
+      )}
     </div>
-  )
+  );
 }

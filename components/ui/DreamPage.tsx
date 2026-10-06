@@ -1,38 +1,32 @@
-'use client';
+import type { Dream } from "@prisma/client";
+import DreamComponent from "./DreamComponent";
+import DreamClient from "./DreamClient";
+import { signedImageUrl } from "@/lib/image-url";
+import { env } from "@/lib/env";
+import { formatDateBR } from "@/lib/dates";
+import { effectivePlan, PLANS } from "@/lib/plans";
+import type { CurrentUser } from "@/lib/auth";
+import { emotionLabel, typeLabel } from "@/lib/constants";
 
-import { useEffect, useState, useTransition } from 'react';
-import DreamComponent from './DreamComponent';
-import Loading from './Loading';
-import { DreamInfos } from '@/actions/interfaces/DreamInfos';
-import { ProcessDreamAction } from '@/actions/process-dream-action';
-import { saveDreamAction } from '@/actions/save-dream-action';
+/** Página de detalhe de um sonho (diário): resultado + ações. */
+export default function DreamPage({ dream, user }: { dream: Dream; user: CurrentUser }) {
+  const maxImages = PLANS[effectivePlan(user)].limits.imagesPerDream;
+  const images = [
+    dream.imagePromptLiteral && { src: signedImageUrl(dream.imagePromptLiteral, "scene"), title: "A cena do sonho" },
+    dream.imagePromptAbstract && { src: signedImageUrl(dream.imagePromptAbstract, "emotion"), title: "A emoção do sonho" },
+  ].filter((x): x is { src: string; title: string } => !!x).slice(0, maxImages);
 
-interface Props {
-  dreamInfos: DreamInfos;
-  isLoggedIn?: boolean;
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-zinc-500">
+        <span>{formatDateBR(dream.createdAt, { dateStyle: "long", timeStyle: "short" })} · {typeLabel(dream.type)} · {emotionLabel(dream.emotion)}</span>
+        <DreamClient dreamId={dream.id} title={dream.title} isFavorite={dream.isFavorite} shareToken={dream.shareToken} appUrl={env.appUrl} />
+      </div>
+      <DreamComponent dream={{ ...dream, images }} />
+      <details className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-zinc-400">
+        <summary className="cursor-pointer text-zinc-300">Seu relato original</summary>
+        <p className="mt-3 whitespace-pre-wrap">{dream.description}</p>
+      </details>
+    </div>
+  );
 }
-
-export default function DreamPage({ dreamInfos, isLoggedIn }: Props) {
-  const [result, setResult] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [isPending, startTransition] = useTransition();
-  
-  useEffect(() => {
-    async function generate() {
-      const res = await ProcessDreamAction(dreamInfos);
-      setResult(res);
-      setLoading(false);
-    }
-    generate();
-  }, [dreamInfos]);
-
-  if (loading) return <Loading />;
-  async function handleSave() {
-    startTransition(async () => {
-      await saveDreamAction(dreamInfos, result);
-    });
-  }
-  return <DreamComponent dreamResult={result} onSave={handleSave}  isPending={isPending} isLoggedIn={isLoggedIn} />;
-}
-
-

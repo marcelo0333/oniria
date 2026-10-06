@@ -1,56 +1,34 @@
 "use server";
 
-import { prisma } from '@/test-prisma';
-import { getId } from '@/lib/session';
+import { randomBytes } from "crypto";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth";
 
-interface SaveDreamActionProps {
-    dreamForm: {
-        description: string;
-        type: string;
-        emotion: string;
-        scenerie: string;
-        intensity: number;
-    },
-    dreamResult: {
-        title: string;
-        interpretation: string;
-        keySymbolism: string;
-        luckNumbers: string;
-        warnings: string,
-        imagesPrompts: {
-            finalSceneImageUrl: undefined;
-            finalEmotionImageUrl: undefined;
-        };
-    }
+export async function toggleFavoriteAction(dreamId: string) {
+  const user = await requireUser();
+  const dream = await prisma.dream.findFirst({ where: { id: dreamId, userId: user.id }, select: { isFavorite: true } });
+  if (!dream) return;
+  await prisma.dream.update({ where: { id: dreamId }, data: { isFavorite: !dream.isFavorite } });
+  revalidatePath("/app/sonhos");
+  revalidatePath(`/app/sonhos/${dreamId}`);
 }
 
-export async function saveDreamAction(dreamForm: SaveDreamActionProps['dreamForm'], dreamResult: SaveDreamActionProps['dreamResult']) {
-    const id = await getId();
-    if (!id) {
-        console.error('User not authenticated. Cannot save dream.');
-        return;
-    }
-    try {
-        const response = await prisma.dream.create({
-            data: {
-                description: dreamForm.description,
-                type: dreamForm.type,
-                emotion: dreamForm.emotion,
-                scenerie: dreamForm.scenerie,
-                intensity: dreamForm.intensity,
-                title: dreamResult.title,
-                interpretation: dreamResult.interpretation,
-                keySymbolism: dreamResult.keySymbolism,
-                luckNumbers: dreamResult.luckNumbers,
-                userId: id,
-                warnings: dreamResult.warnings,
-                finalSceneImageUrl: dreamResult.imagesPrompts.finalSceneImageUrl,
-                finalEmotionImageUrl: dreamResult.imagesPrompts.finalEmotionImageUrl,
-            }
-        });
-        console.log('Dream saved successfully:', response);
-        return response;
-    } catch (error) {
-        console.error('Error saving dream:', error);
-    }
+/** Gera (ou revoga) o link público de compartilhamento. Retorna o token ou null. */
+export async function toggleShareAction(dreamId: string): Promise<string | null> {
+  const user = await requireUser();
+  const dream = await prisma.dream.findFirst({ where: { id: dreamId, userId: user.id }, select: { shareToken: true } });
+  if (!dream) return null;
+  const shareToken = dream.shareToken ? null : randomBytes(9).toString("base64url");
+  await prisma.dream.update({ where: { id: dreamId }, data: { shareToken } });
+  revalidatePath(`/app/sonhos/${dreamId}`);
+  return shareToken;
+}
+
+export async function deleteDreamAction(dreamId: string) {
+  const user = await requireUser();
+  await prisma.dream.deleteMany({ where: { id: dreamId, userId: user.id } });
+  revalidatePath("/app/sonhos");
+  redirect("/app/sonhos");
 }

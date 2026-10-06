@@ -1,64 +1,34 @@
-import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth";
 
-// GET /api/dreams - Lista todos os dreams
-export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
-    try {
-        const id = (await context.params).id;
-        const dreams = await prisma.dream.findUnique({
-            where: {
-                id: id
-            }
-        });
-        if (!dreams) {
-            return NextResponse.json({ error: "Dream not found" }, { status: 404 });
-        }
-        return NextResponse.json(dreams);
-    } catch (error) {
-        return NextResponse.json({ error }, { status: 500 });
-    }
+type Ctx = { params: Promise<{ id: string }> };
+
+/** GET /api/dreams/:id — detalhe (somente do dono). */
+export async function GET(_: Request, { params }: Ctx) {
+  const user = await getCurrentUser();
+  if (!user) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  const dream = await prisma.dream.findFirst({ where: { id: (await params).id, userId: user.id } });
+  if (!dream) return NextResponse.json({ error: "Sonho não encontrado" }, { status: 404 });
+  return NextResponse.json(dream);
 }
 
-// DELETE /api/dreams/:id - Deleta um dream pelo ID
-export async function DELETE(
-    req: Request, 
-    context: { params: Promise<{ id: string }> }) {
-    try {
-        const id = (await context.params).id;
-        await prisma.dream.delete({
-            where:{
-                id: id
-            }
-        })
-
-        return NextResponse.json({ message: "Dream deleted successfully" });
-    } catch (error) {
-        return NextResponse.json({ error }, { status: 500 });
-    }
+/** DELETE /api/dreams/:id — remove (somente do dono). */
+export async function DELETE(_: Request, { params }: Ctx) {
+  const user = await getCurrentUser();
+  if (!user) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  const { count } = await prisma.dream.deleteMany({ where: { id: (await params).id, userId: user.id } });
+  if (count === 0) return NextResponse.json({ error: "Sonho não encontrado" }, { status: 404 });
+  return NextResponse.json({ ok: true });
 }
 
-export async function PATCH(req: Request, 
-    context: { params: Promise<{ id: string }> }) {
-    try {
-        const id = (await context.params).id;
-        const body = await req.json();
-        const updatedDream = await prisma.dream.update({
-            where: {
-                id: id
-            },
-            data: {
-                title: body.title,
-                description: body.description,
-                type: body.type,
-                emotion: body.emotion,
-                scenerie: body.scenerie,
-                intensity: body.intensity,
-                interpretation: body.interpretation,
-                keySymbolism: body.keySymbolism,
-            },
-        });
-        return NextResponse.json(updatedDream);
-    } catch (error) {
-        return NextResponse.json({ error }, { status: 500 });
-    }
+/** PATCH /api/dreams/:id — apenas favoritar/desfavoritar. */
+export async function PATCH(req: Request, { params }: Ctx) {
+  const user = await getCurrentUser();
+  if (!user) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  const body = (await req.json().catch(() => ({}))) as { isFavorite?: unknown };
+  if (typeof body.isFavorite !== "boolean") return NextResponse.json({ error: "isFavorite (boolean) é obrigatório" }, { status: 400 });
+  const { count } = await prisma.dream.updateMany({ where: { id: (await params).id, userId: user.id }, data: { isFavorite: body.isFavorite } });
+  if (count === 0) return NextResponse.json({ error: "Sonho não encontrado" }, { status: 404 });
+  return NextResponse.json({ ok: true });
 }

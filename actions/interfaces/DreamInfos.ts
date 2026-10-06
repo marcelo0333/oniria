@@ -1,7 +1,1 @@
-export interface DreamInfos {
-    type: string;
-    description: string;
-    emotion: string;
-    scenerie: string;
-    intensity: number;
-}
+export type { DreamInput as DreamInfos } from "@/lib/services/dream";

@@ -6,34 +6,160 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Plan {
+  FREE
+  MISTICO
+  ORACULO
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum AuthTokenType {
+  VERIFY_EMAIL
+  RESET_PASSWORD
+}
+
+enum UsageKind {
+  DREAM
+  ASTRAL
+  TAROT_THREE
+  COMPATIBILITY
+  NUMEROLOGY
+}
+
+enum ReadingKind {
+  ASTRAL
+  TAROT_DAILY
+  TAROT_THREE
+  COMPATIBILITY
+  NUMEROLOGY
+}
+
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
+  id              String    @id @default(uuid())
+  name            String
+  email           String    @unique
+  password        String
+  role            Role      @default(USER)
+  emailVerifiedAt DateTime?
+  termsAcceptedAt DateTime?
+  dailyEmail      Boolean   @default(true)
+  lastDailyEmail  DateTime?
+
+  // Dados de nascimento (mapa astral)
+  birthDate  String? // YYYY-MM-DD
+  birthTime  String? // HH:mm (hora local do nascimento)
+  birthPlace String?
+  birthLat   Float?
+  birthLon   Float?
+  birthTz    String? // IANA, ex.: America/Sao_Paulo
+  sunSign    String? // slug do signo solar, ex.: "escorpiao"
+
+  // Assinatura (sincronizada via webhook Stripe)
+  plan                 Plan      @default(FREE)
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?   @unique
+  subscriptionStatus   String?
+  currentPeriodEnd     DateTime?
+
   createdAt DateTime @default(now())
-  // Relacionamento com dreams (se quiser)
-  dreams    Dream[]
+  updatedAt DateTime @updatedAt
+
+  dreams   Dream[]
+  readings Reading[]
+  usage    UsageEvent[]
+  tokens   AuthToken[]
 }
 
 model Dream {
-  id            String   @id @default(uuid())
-  title         String
-  description   String
-  type          String
-  emotion       String
-  scenerie      String
-  intensity     Int
-  luckNumbers    String?  // ✅ Adicione esta linha
-  warnings    String?  // ✅ Adicione esta linha
-  finalSceneImageUrl    String?  // ✅ Adicione esta linha
-  finalEmotionImageUrl    String?  // ✅ Adicione esta linha
+  id          String @id @default(uuid())
+  title       String
+  description String
+  type        String
+  emotion     String
+  scenerie    String
+  intensity   Int
 
-  interpretation String?
-  keySymbolism   String?
+  interpretation String
+  keySymbolism   String
+  warnings       String?
+  luckNumbers    String?
+  moonPhase      String? // ex.: "Lua Cheia em Escorpião"
+  astroContext   String? // resumo do clima astral usado na leitura
 
-  createdAt     DateTime @default(now())
+  imagePromptLiteral  String?
+  imagePromptAbstract String?
 
-  userId        String?
-  user          User? @relation(fields: [userId], references: [id])
+  isFavorite Boolean @default(false)
+  shareToken String? @unique
+
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model Reading {
+  id        String      @id @default(uuid())
+  kind      ReadingKind
+  input     Json
+  output    Json
+  createdAt DateTime    @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, kind, createdAt])
+}
+
+model UsageEvent {
+  id        String    @id @default(uuid())
+  kind      UsageKind
+  createdAt DateTime  @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, kind, createdAt])
+}
+
+model AuthToken {
+  id        String        @id @default(uuid())
+  type      AuthTokenType
+  tokenHash String        @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime      @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+}
+
+model Horoscope {
+  id        String   @id @default(uuid())
+  sign      String
+  date      String // YYYY-MM-DD (America/Sao_Paulo)
+  content   Json
+  createdAt DateTime @default(now())
+
+  @@unique([sign, date])
+}
+
+model RateLimit {
+  key     String   @id
+  count   Int
+  resetAt DateTime
+}
+
+model StripeEvent {
+  id          String   @id // event.id do Stripe (idempotência)
+  type        String
+  processedAt DateTime @default(now())
 }

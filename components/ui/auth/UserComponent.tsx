@@ -1,111 +1,47 @@
-import { UserIcon } from 'lucide-react';
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { deleteSession } from '@/lib/session';
+"use client";
 
-interface UserComponentProps {
-  user?: {
-    id?: string;
-    name?: string;
-    email?: string;
-  } | null;
-}
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { UserIcon } from "lucide-react";
+import { logout } from "@/actions/logout";
 
-export default function UserComponent({ user }: UserComponentProps) {
-    const [open, setOpen] = React.useState(false);
-    const ref = React.useRef<HTMLDivElement>(null);
-    const handleLogout = () => {
-        deleteSession();
-    };
+type Props = { user: { name?: string; email?: string } };
 
-    // Fecha ao clicar fora
-    React.useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
-            if (ref.current && !ref.current.contains(event.target as Node)) {
-                setOpen(false);
-            }
-        }
+export default function UserComponent({ user }: Props) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
-        if (open) {
-            document.addEventListener('mousedown', handleClickOutside);
-        }
+  useEffect(() => {
+    if (!open) return;
+    const onClick = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("mousedown", onClick);
+    window.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("mousedown", onClick); window.removeEventListener("keydown", onKey); };
+  }, [open]);
 
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [open]);
-
-    // Fecha com ESC
-    React.useEffect(() => {
-        function handleEsc(e: KeyboardEvent) {
-        if (e.key === 'Escape') setOpen(false);
-        }
-
-        if (open) {
-            window.addEventListener('keydown', handleEsc);
-        }
-
-        return () => {
-            window.removeEventListener('keydown', handleEsc);
-        };
-    }, [open]);
-
-    return (
-        <div ref={ref} className="relative">
-        {/* Trigger */}
-        <button
-            onClick={() => setOpen((prev) => !prev)}
-            className="flex items-center gap-2 bg-black/70 px-3 py-1 rounded-full text-zinc-300 hover:bg-black/80 transition"
-        >
-            <span className="text-sm">{user?.name || 'Guest'}</span>
-            <UserIcon className="h-5 w-5" />
-        </button>
-
-        {/* Dropdown */}
-        <AnimatePresence>
-            {open && (
-            <motion.div
-                initial={{ opacity: 0, y: -8, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -6, scale: 0.95 }}
-                transition={{ duration: 0.15, ease: 'easeOut' }}
-                className="
-                absolute right-0 mt-2 w-72
-                rounded-xl
-                bg-white dark:bg-gray-800/95
-                shadow-xl
-                border border-black/5 dark:border-white/10
-                z-50
-                "
-            >
-                <div className="p-4 text-sm text-gray-800 dark:text-gray-200">
-                <p className="font-semibold">{user?.name}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
-                <p className="text-xs mt-1 break-all text-gray-400">{user?.id}</p>
-                </div>
-
-                <div className="border-t border-gray-200 dark:border-white/10" />
-
-                <div className="p-3 flex gap-2">
-                <button
-                    onClick={() => setOpen(false)}
-                    className="flex-1 rounded-md px-2 py-1 text-sm bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 transition"
-                >
-                    Close
-                </button>
-
-                <button
-                    onClick={handleLogout}
-                    className="flex-1 rounded-md px-2 py-1 text-sm bg-red-600 text-white hover:bg-red-700 transition"
-                >
-                    Logout
-                </button>
-                </div>
-            </motion.div>
-            )}
-        </AnimatePresence>
+  return (
+    <div ref={ref} className="relative">
+      <button onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-haspopup="menu" className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-sm text-zinc-200 hover:bg-white/15 transition">
+        <span className="max-w-28 truncate">{user.name?.split(" ")[0]}</span>
+        <UserIcon className="h-4 w-4" />
+      </button>
+      {open && (
+        <div role="menu" className="absolute right-0 mt-2 w-64 rounded-xl border border-white/10 bg-zinc-950/95 shadow-xl backdrop-blur z-50">
+          <div className="p-4 text-sm">
+            <p className="font-semibold text-zinc-100 truncate">{user.name}</p>
+            <p className="text-xs text-zinc-500 truncate">{user.email}</p>
+          </div>
+          <div className="border-t border-white/10 p-2 flex flex-col text-sm">
+            <Link role="menuitem" href="/app" className="rounded-lg px-3 py-2 text-zinc-300 hover:bg-white/10" onClick={() => setOpen(false)}>Meu painel</Link>
+            <Link role="menuitem" href="/app/perfil" className="rounded-lg px-3 py-2 text-zinc-300 hover:bg-white/10" onClick={() => setOpen(false)}>Perfil</Link>
+            <Link role="menuitem" href="/app/assinatura" className="rounded-lg px-3 py-2 text-zinc-300 hover:bg-white/10" onClick={() => setOpen(false)}>Assinatura</Link>
+            <form action={logout}>
+              <button role="menuitem" type="submit" className="w-full text-left rounded-lg px-3 py-2 text-red-300 hover:bg-red-500/10">Sair</button>
+            </form>
+          </div>
         </div>
-    );
+      )}
+    </div>
+  );
 }
-
-

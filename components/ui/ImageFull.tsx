@@ -1,54 +1,31 @@
+"use client";
 
-import React, { useEffect, useState } from 'react'
-import { createPortal } from 'react-dom';
+import { useEffect } from "react";
+import { createPortal } from "react-dom";
 
-interface Props {
-    img: string | undefined;
-    title: string;
-    onClose?: () => void;
-}
+type Props = { img: string | undefined; title: string; onClose?: () => void };
 
 export default function ImageFull({ img, title, onClose }: Props) {
-  const [mounted, SetMounted] = useState(false)
+  useEffect(() => {
+    if (!img) return;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose?.(); };
+    window.addEventListener("keydown", onKey);
+    return () => { document.body.style.overflow = ""; window.removeEventListener("keydown", onKey); };
+  }, [img, onClose]);
 
-  useEffect(()=>{
-    SetMounted(true)
-    if(img){
-      document.body.style.overflow = 'hidden'
-    }
-    return()=>{
-      document.body.style.overflow = 'unset'      
-    };
-  },[img]);
-  if(!mounted || !img) return null
+  if (!img || typeof document === "undefined") return null;
 
   return createPortal(
-    <div className="absolute inset-0 z-100 flex items-center justify-center animate-fade-in">
-
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-
-      {/* Conteúdo */}
-      <div className="relative z-100 flex flex-col items-center gap-4 px-6">
-
-        {title && (
-          <h3 className="text-xl font-[var(--font-playfair)] text-zinc-200 tracking-wide">
-            {title}
-          </h3>
-        )}
-
-        <img
-          src={img}
-          alt={title || "Dream Scene"}
-          className="max-h-[80vh] rounded-2xl shadow-2xl object-contain"
-        />
-        <button
-          onClick={onClose}
-          className="pointer-events-auto absolute bottom-8 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 px-5 py-3 text-white backdrop-blur-md transition-all hover:scale-105 active:scale-95"
-        >
-          Close View
-        </button>
+    <div role="dialog" aria-modal="true" aria-label={title} className="fixed inset-0 z-[100] flex items-center justify-center animate-fade-in" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+      <div className="relative z-10 flex flex-col items-center gap-4 px-6" onClick={(e) => e.stopPropagation()}>
+        <h3 className="text-xl tracking-wide text-zinc-200">{title}</h3>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={img} alt={title} className="max-h-[75vh] rounded-2xl object-contain shadow-2xl" />
+        <button onClick={onClose} className="rounded-full border border-white/20 bg-white/10 px-5 py-2.5 text-white backdrop-blur-md transition hover:bg-white/20">Fechar</button>
       </div>
-    </div>
-  , document.body);
+    </div>,
+    document.body,
+  );
 }

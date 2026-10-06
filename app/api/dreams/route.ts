@@ -1,38 +1,21 @@
-import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth";
 
-// GET /api/dreams - Lista todos os dreams
+/** GET /api/dreams — lista os sonhos do usuário autenticado (paginado por cursor). */
 export async function GET(req: Request) {
-    try {
-        const dreams = await prisma.dream.findMany({
-            orderBy: {
-                createdAt: 'desc'
-            }
-        });
-        return NextResponse.json(dreams);
-    } catch (error) {
-        return NextResponse.json({ error }, { status: 500 });
-    }
-}
-
-// POST /api/dreams - Cria um novo dream
-export async function POST(req: Request) {
-    try {
-        const body = await req.json();
-        const dream = await prisma.dream.create({
-            data: {
-                title: body.title,
-                description: body.description,
-                type: body.type,
-                emotion: body.emotion,
-                scenerie: body.scenerie,
-                intensity: body.intensity,
-                interpretation: body.interpretation,
-                keySymbolism: body.keySymbolism,
-            },
-        });
-        return NextResponse.json(dream, { status: 201 });
-    } catch (error) {
-        return NextResponse.json({ error }, { status: 500 });
-    }
+  const user = await getCurrentUser();
+  if (!user) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  const { searchParams } = new URL(req.url);
+  const take = Math.min(50, Math.max(1, Number(searchParams.get("limit") ?? 20)));
+  const cursor = searchParams.get("cursor");
+  const dreams = await prisma.dream.findMany({
+    where: { userId: user.id },
+    orderBy: { createdAt: "desc" },
+    take: take + 1,
+    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    select: { id: true, title: true, interpretation: true, keySymbolism: true, moonPhase: true, isFavorite: true, createdAt: true },
+  });
+  const nextCursor = dreams.length > take ? dreams.pop()!.id : null;
+  return NextResponse.json({ dreams, nextCursor });
 }
