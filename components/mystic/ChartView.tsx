@@ -12,7 +12,7 @@ function Wheel({ chart }: { chart: NatalChart }) {
   const angle = (lon: number) => ((180 - (lon - asc)) * Math.PI) / 180; // ascendente à esquerda
   const pt = (lon: number, r: number) => [c + r * Math.cos(angle(lon)), c - r * Math.sin(angle(lon))] as const;
   return (
-    <svg viewBox={`0 0 ${size} ${size}`} className="mx-auto w-full max-w-sm" role="img" aria-label="Roda do mapa astral">
+    <svg viewBox={`-18 -18 ${size + 36} ${size + 36}`} className="mx-auto w-full max-w-sm" role="img" aria-label="Roda do mapa astral">
       <circle cx={c} cy={c} r={150} fill="rgba(255,255,255,0.03)" stroke="rgba(167,139,250,0.5)" />
       <circle cx={c} cy={c} r={118} fill="none" stroke="rgba(167,139,250,0.25)" />
       <circle cx={c} cy={c} r={60} fill="none" stroke="rgba(167,139,250,0.15)" />

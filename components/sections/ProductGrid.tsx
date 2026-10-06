@@ -15,7 +15,8 @@ export default function ProductGrid({ highlightId, compact = false }: { highligh
             <p className="text-4xl" aria-hidden>{p.icon}</p>
             <h3 className="mt-3 text-xl font-semibold">{p.name}</h3>
             <p className="text-sm text-zinc-400">{p.short}</p>
-            <p className="mt-4 text-3xl font-bold text-zinc-50">{formatCents(p.amount)}<span className="text-sm font-normal text-zinc-500"> · pagamento único</span></p>
+            <p className="mt-4 text-3xl font-bold text-zinc-50">{formatCents(p.amount)}</p>
+            <p className="text-xs text-zinc-500">pagamento único · Pix ou cartão</p>
             {!compact && <p className="mt-3 text-sm text-zinc-300">{p.description}</p>}
             <ul className="my-5 flex-1 space-y-1.5 text-sm text-zinc-300">
               {p.bullets.map((b) => <li key={b} className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />{b}</li>)}

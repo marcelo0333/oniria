@@ -50,7 +50,7 @@ export async function fulfillCheckoutSession(session: Stripe.Checkout.Session): 
   const result = await prisma.$transaction(async (tx) => {
     const { count } = await tx.purchase.updateMany({
       where: { id: purchaseId, status: { in: ["PENDING", "FAILED", "EXPIRED"] } },
-      data: { status: "PAID", paidAt: new Date(), stripePaymentIntentId: paymentIntentId, stripeSessionId: session.id },
+      data: { status: "PAID", paidAt: new Date(), stripePaymentIntentId: paymentIntentId },
     });
     if (count === 0) return null;
     const p = await tx.purchase.findUniqueOrThrow({ where: { id: purchaseId } });

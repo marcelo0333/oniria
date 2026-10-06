@@ -55,6 +55,15 @@ export const USAGE_LABEL: Record<UsageKind, string> = {
   SOLAR_RETURN: "revoluções solares",
 };
 
+export const USAGE_LABEL_ONE: Record<UsageKind, string> = {
+  DREAM: "interpretação de sonho",
+  ASTRAL: "leitura de mapa astral",
+  TAROT_THREE: "tiragem de tarot",
+  COMPATIBILITY: "análise de compatibilidade",
+  NUMEROLOGY: "leitura de numerologia",
+  SOLAR_RETURN: "revolução solar",
+};
+
 /** Plano efetivo: assinatura inativa/vencida volta para o grátis. */
 export function effectivePlan(user: { plan: Plan; subscriptionStatus: string | null; currentPeriodEnd: Date | null }): Plan {
   if (user.plan === "FREE") return "FREE";

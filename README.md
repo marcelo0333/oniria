@@ -43,8 +43,9 @@ tests/               vitest + e2e (playwright)
 ```
 
 ## Decisões importantes
+- **Duas formas de comprar**: assinatura (Grátis/Místico/Oráculo) e **consultas avulsas** com pagamento único (Pix/cartão) que viram créditos — catálogo em `lib/products.ts`, fluxo em `lib/purchases.ts`.
 - **Plano do usuário vem sempre do webhook do Stripe** (`lib/stripe.ts#syncSubscription`); `effectivePlan` rebaixa assinaturas vencidas/canceladas.
-- **Cotas atômicas**: `reserveUsage` usa transação Serializable (testada com 20 requisições simultâneas) e `refundUsage` devolve a cota se a IA falhar.
+- **Cotas atômicas**: `reserveUsage` serializa por usuário+recurso com lock consultivo do Postgres (testado com 20 requisições simultâneas: nenhuma falha, nenhum estouro); usa a cota do plano e depois créditos avulsos; `refundUsage` devolve ao lugar certo se a IA falhar.
 - **Chaves de IA nunca vão ao browser**: imagens passam por `/api/image` com URL assinada (HMAC) e cache de CDN.
 - **IA com saída validada** (Zod), guardrails de segurança no prompt e tratamento do texto do usuário como dado (anti prompt-injection).
 - **LGPD**: consentimento no cadastro, exportação (JSON) e exclusão de conta com cancelamento da assinatura.

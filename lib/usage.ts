@@ -1,14 +1,14 @@
 import "server-only";
 import type { UsageKind } from "@prisma/client";
 import { prisma } from "./prisma";
-import { effectivePlan, monthStart, PLANS, USAGE_LABEL } from "./plans";
+import { effectivePlan, monthStart, PLANS, USAGE_LABEL, USAGE_LABEL_ONE } from "./plans";
 import type { CurrentUser } from "./auth";
 
 export class QuotaError extends Error {
   constructor(public kind: UsageKind, public limit: number, public plan: string) {
     super(
       limit > 0
-        ? `Você atingiu o limite de ${limit} ${USAGE_LABEL[kind]} do plano ${PLANS[plan as keyof typeof PLANS]?.name ?? plan} neste mês.`
+        ? `Você atingiu o limite de ${limit} ${limit === 1 ? USAGE_LABEL_ONE[kind] : USAGE_LABEL[kind]} do plano ${PLANS[plan as keyof typeof PLANS]?.name ?? plan} neste mês.`
         : `Este recurso não está incluso no plano ${PLANS[plan as keyof typeof PLANS]?.name ?? plan}.`,
     );
   }
@@ -45,30 +45,23 @@ export type Reservation = { id: string; source: "PLAN" | "CREDIT" };
 
 /**
  * Reserva 1 uso de forma atômica: primeiro a cota mensal do plano; esgotada, consome 1 crédito avulso.
- * Transação Serializable + nova tentativa em conflito (P2034): requisições simultâneas nunca estouram cota/saldo.
- * Devolva com `refundUsage` se a geração falhar.
+ * Um lock consultivo do Postgres por (usuário, recurso) serializa requisições simultâneas do mesmo usuário:
+ * sem corrida, sem conflitos de serialização e sem bloquear outros usuários. Devolva com `refundUsage` se a geração falhar.
  */
 export async function reserveUsage(user: CurrentUser, kind: UsageKind): Promise<string> {
   const plan = effectivePlan(user);
   const limit = PLANS[plan].limits[kind];
-  for (let attempt = 0; ; attempt++) {
-    try {
-      return await prisma.$transaction(
-        async (tx) => {
-          const used = await tx.usageEvent.count({ where: { userId: user.id, kind, source: "PLAN", createdAt: { gte: monthStart() } } });
-          if (used < limit) return (await tx.usageEvent.create({ data: { userId: user.id, kind, source: "PLAN" } })).id;
-          const { count } = await tx.creditBalance.updateMany({ where: { userId: user.id, kind, balance: { gt: 0 } }, data: { balance: { decrement: 1 } } });
-          if (count === 0) throw new QuotaError(kind, limit, plan);
-          return (await tx.usageEvent.create({ data: { userId: user.id, kind, source: "CREDIT" } })).id;
-        },
-        { isolationLevel: "Serializable" },
-      );
-    } catch (error) {
-      const conflict = typeof error === "object" && error !== null && (error as { code?: string }).code === "P2034";
-      if (!conflict || attempt >= 5) throw error;
-      await new Promise((r) => setTimeout(r, 30 * (attempt + 1) + Math.random() * 40));
-    }
-  }
+  return prisma.$transaction(
+    async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`usage:${user.id}:${kind}`}))`;
+      const used = await tx.usageEvent.count({ where: { userId: user.id, kind, source: "PLAN", createdAt: { gte: monthStart() } } });
+      if (used < limit) return (await tx.usageEvent.create({ data: { userId: user.id, kind, source: "PLAN" } })).id;
+      const { count } = await tx.creditBalance.updateMany({ where: { userId: user.id, kind, balance: { gt: 0 } }, data: { balance: { decrement: 1 } } });
+      if (count === 0) throw new QuotaError(kind, limit, plan);
+      return (await tx.usageEvent.create({ data: { userId: user.id, kind, source: "CREDIT" } })).id;
+    },
+    { maxWait: 10_000, timeout: 15_000 },
+  );
 }
 
 /** Desfaz uma reserva (falha na geração): apaga o evento e devolve o crédito, se veio de crédito. */

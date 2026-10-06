@@ -14,6 +14,12 @@ import type { UsageKind } from "@prisma/client";
 
 export const metadata: Metadata = { title: "Minhas consultas" };
 
+/** Pagamento iniciado na última hora ainda sem confirmação (ex.: Pix aguardando compensação). */
+function hasRecentPending(list: { status: string; stripeSessionId: string | null; createdAt: Date }[]) {
+  const cutoff = Date.now() - 3600e3;
+  return list.some((p) => p.status === "PENDING" && !!p.stripeSessionId && p.createdAt.getTime() > cutoff);
+}
+
 const STATUS: Record<string, { label: string; tone: "green" | "amber" | "zinc" | "purple" }> = {
   PAID: { label: "pago", tone: "green" },
   PENDING: { label: "aguardando pagamento", tone: "amber" },
@@ -42,7 +48,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
 
       {confirmation === "granted" || confirmation === "already" ? (
         <p role="status" className="rounded-xl border border-emerald-400/30 bg-emerald-500/15 px-4 py-3 text-emerald-200">Pagamento confirmado! Seu crédito já está disponível ✨</p>
-      ) : status === "success" ? (
+      ) : status === "success" || hasRecentPending(purchases) ? (
         <p role="status" className="rounded-xl border border-amber-400/30 bg-amber-500/10 px-4 py-3 text-amber-100">Recebemos seu pedido. Se pagou com Pix, a confirmação chega em instantes — atualize esta página em alguns segundos.</p>
       ) : null}
 
