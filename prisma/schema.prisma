@@ -9,7 +9,6 @@ datasource db {
 enum Plan {
   FREE
   MISTICO
-  ORACULO
 }
 
 enum Role {
@@ -81,6 +80,7 @@ model User {
   subscriptionStatus   String?
   currentPeriodEnd     DateTime?
   cancelAtPeriodEnd    Boolean   @default(false)
+  trialUsedAt          DateTime? // teste grátis do plano já usado (1 por pessoa)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -102,8 +102,9 @@ model Dream {
   scenerie    String
   intensity   Int
 
-  interpretation String
-  keySymbolism   String
+  // nulos = sonho salvo e ainda bloqueado (aguardando desbloqueio por assinatura/consulta avulsa)
+  interpretation String?
+  keySymbolism   String?
   warnings       String?
   luckNumbers    String?
   moonPhase      String? // ex.: "Lua Cheia em Escorpião"

@@ -4,13 +4,14 @@ import { prisma } from "@/lib/prisma";
 import { usageSummary } from "@/lib/usage";
 import { solarYearPreview, type SolarReturnOutput } from "@/lib/services/solar-return";
 import { formatDateBR } from "@/lib/dates";
-import { PRODUCT_BY_ID, formatCents } from "@/lib/products";
+import { PRODUCT_BY_ID, formatCents, priceFor } from "@/lib/products";
 import ChartView from "@/components/mystic/ChartView";
 import Card, { SectionTitle } from "@/components/ui/Card";
 import { ButtonLink } from "@/components/ui/Button";
 import ActionButton from "@/components/app/ActionButton";
 import UsageMeter from "@/components/app/UsageMeter";
-import BuyButton from "@/components/sections/BuyButton";
+import Paywall from "@/components/sections/Paywall";
+import { isPaid } from "@/lib/plans";
 import { solarReturnAction } from "@/actions/readings";
 
 export const metadata: Metadata = { title: "Revolução Solar" };
@@ -69,18 +70,22 @@ export default async function Page() {
           <Card><h3 className="mb-2 font-semibold text-purple-200">✨ Conselho do ano</h3><p className="text-zinc-200">{out.reading.advice}</p></Card>
         </div>
       ) : (
-        <Card className="space-y-4">
-          <p className="text-zinc-300">{product.description}</p>
-          <UsageMeter label={quota.label} used={quota.used} limit={quota.limit} credits={quota.credits} />
-          {quota.available > 0 ? (
+        quota.available > 0 ? (
+          <Card className="space-y-4">
+            <p className="text-zinc-300">{product.description}</p>
+            <UsageMeter label={quota.label} used={quota.used} limit={quota.limit} credits={quota.credits} />
             <ActionButton action={solarReturnAction} pendingText="Calculando seu ano… (até 40s)">☀️ Gerar minha Revolução Solar</ActionButton>
-          ) : (
-            <div className="flex flex-wrap items-center gap-4">
-              <BuyButton productId={product.id} label={`Comprar por ${formatCents(product.amount)}`} />
-              <span className="text-sm text-zinc-400">Pagamento único · Pix ou cartão · ou <a href="/precos" className="text-purple-300 underline">inclusa no plano Oráculo</a></span>
-            </div>
-          )}
-        </Card>
+          </Card>
+        ) : (
+          <Paywall
+            user={user}
+            kind="SOLAR_RETURN"
+            next="/app/revolucao-solar"
+            title="Descubra o que os astros reservam para o seu ano"
+            subtitle={isPaid(user) ? `Preço de assinante: ${formatCents(priceFor(product, user))} (em vez de ${formatCents(product.amount)}).` : `${product.description} Assinantes do Místico pagam ${formatCents(priceFor(product, { plan: "MISTICO", subscriptionStatus: "active", currentPeriodEnd: null }))}.`}
+            preview={<div className="space-y-5"><p className="text-center text-xs uppercase tracking-widest text-zinc-500">O tema do seu ano</p><p className="text-center text-2xl text-purple-200">O ano de …</p>{SECTIONS.map(([, t]) => <div key={t}><p className="mb-2 font-semibold text-purple-200">{t}</p><div className="h-3 w-4/5 rounded bg-zinc-500/50" /></div>)}</div>}
+          />
+        )
       )}
 
       <section>

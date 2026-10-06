@@ -3,6 +3,7 @@
 SaaS em português para o nicho místico: **interpretação de sonhos com IA** (cruzada com a Lua do dia e o mapa astral), **mapa astral**, **tarot**, **numerologia**, **compatibilidade de signos** e **horóscopo diário**, com planos pagos via Stripe.
 
 - Plano de produto: [`docs/PLANO_PRODUTO.md`](docs/PLANO_PRODUTO.md)
+- Análise financeira e cenários: [`docs/FINANCEIRO.md`](docs/FINANCEIRO.md)
 - Tarefas de desenvolvimento: [`docs/TAREFAS.md`](docs/TAREFAS.md)
 - **Como colocar em produção e vender:** [`docs/GO_LIVE.md`](docs/GO_LIVE.md)
 
@@ -43,7 +44,7 @@ tests/               vitest + e2e (playwright)
 ```
 
 ## Decisões importantes
-- **Duas formas de comprar**: assinatura (Grátis/Místico/Oráculo) e **consultas avulsas** com pagamento único (Pix/cartão) que viram créditos — catálogo em `lib/products.ts`, fluxo em `lib/purchases.ts`.
+- **Modelo paid-first**: grátis é uma degustação única (1 sonho) + prévias de custo zero; tudo com custo de IA fica atrás de paywall. **Duas formas de comprar**: plano único Místico (teste grátis com cartão) e **consultas avulsas** com pagamento único (Pix/cartão) que viram créditos — catálogo em `lib/products.ts`, fluxo em `lib/purchases.ts`.
 - **Plano do usuário vem sempre do webhook do Stripe** (`lib/stripe.ts#syncSubscription`); `effectivePlan` rebaixa assinaturas vencidas/canceladas.
 - **Cotas atômicas**: `reserveUsage` serializa por usuário+recurso com lock consultivo do Postgres (testado com 20 requisições simultâneas: nenhuma falha, nenhum estouro); usa a cota do plano e depois créditos avulsos; `refundUsage` devolve ao lugar certo se a IA falhar.
 - **Chaves de IA nunca vão ao browser**: imagens passam por `/api/image` com URL assinada (HMAC) e cache de CDN.

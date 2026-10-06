@@ -22,7 +22,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ q
     },
     orderBy: { createdAt: "desc" },
     take: 100,
-    select: { id: true, title: true, description: true, createdAt: true, type: true, emotion: true, moonPhase: true, isFavorite: true },
+    select: { id: true, title: true, description: true, createdAt: true, type: true, emotion: true, moonPhase: true, isFavorite: true, interpretation: true },
   });
 
   return (
@@ -46,6 +46,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ q
                 <div className="flex items-start justify-between gap-3">
                   <h2 className="text-lg font-semibold text-zinc-100">{d.title}</h2>
                   {d.isFavorite && <Heart className="h-4 w-4 shrink-0 fill-pink-400 text-pink-400" aria-label="Favorito" />}
+                  {!d.interpretation && <span className="shrink-0 rounded-full border border-purple-300/40 bg-purple-500/15 px-2.5 py-0.5 text-xs text-purple-200">🔒 aguardando interpretação</span>}
                 </div>
                 <p className="mt-1 line-clamp-2 text-sm text-zinc-400">{d.description}</p>
                 <p className="mt-2 text-xs text-zinc-500">{formatDateBR(d.createdAt, { dateStyle: "medium" })} · {typeLabel(d.type)} · {emotionLabel(d.emotion)}{d.moonPhase ? ` · 🌙 ${d.moonPhase}` : ""}</p>

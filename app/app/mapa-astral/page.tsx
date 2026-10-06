@@ -8,6 +8,8 @@ import { ButtonLink } from "@/components/ui/Button";
 import ActionButton from "@/components/app/ActionButton";
 import UsageMeter from "@/components/app/UsageMeter";
 import { astralAction } from "@/actions/readings";
+import Paywall from "@/components/sections/Paywall";
+import { isPaid } from "@/lib/plans";
 import { formatDateBR } from "@/lib/dates";
 
 export const metadata: Metadata = { title: "Mapa astral" };
@@ -60,10 +62,21 @@ export default async function Page() {
             <p className="text-xs text-zinc-500">Gerada em {formatDateBR(latest!.createdAt, { dateStyle: "medium" })}.</p>
           </div>
         ) : null}
-        <div className="space-y-3">
-          <UsageMeter label={astral.label} used={astral.used} limit={astral.limit} credits={astral.credits} />
-          <ActionButton action={astralAction} pendingText="Lendo os astros… (até 30s)">{reading ? "Gerar nova leitura" : "✨ Gerar minha leitura"}</ActionButton>
-        </div>
+        {astral.available > 0 ? (
+          <div className="space-y-3">
+            {isPaid(user) && <UsageMeter label={astral.label} used={astral.used} limit={astral.limit} credits={astral.credits} />}
+            <ActionButton action={astralAction} pendingText="Lendo os astros… (até 30s)">{reading ? "Gerar nova leitura" : "✨ Gerar minha leitura"}</ActionButton>
+          </div>
+        ) : !reading ? (
+          <Paywall
+            user={user}
+            kind="ASTRAL"
+            next="/app/mapa-astral"
+            title="Sua leitura completa está a um passo"
+            subtitle="Essência, emoções, amor, carreira, sonhos e desafios — interpretados a partir das suas posições exatas."
+            preview={<div className="space-y-5">{SECTIONS.map(([, t]) => <div key={t}><p className="mb-2 font-semibold text-purple-200">{t}</p><div className="space-y-2">{[1, 2].map((i) => <div key={i} className="h-3 rounded bg-zinc-500/50" style={{ width: `${92 - i * 12}%` }} />)}</div></div>)}</div>}
+          />
+        ) : null}
       </section>
     </div>
   );

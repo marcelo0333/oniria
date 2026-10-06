@@ -17,6 +17,7 @@ import { SIGN_BY_SLUG } from "@/lib/mystic/signs";
 import { todayBR } from "@/lib/dates";
 import { userData } from "@/lib/ai";
 import { UserFacingError } from "./errors";
+import { effectivePlan, PLANS } from "@/lib/plans";
 
 async function guard(user: CurrentUser, key: string, limit = 5) {
   const rl = await rateLimit(`${key}:${user.id}`, limit, 60);
@@ -85,7 +86,7 @@ async function interpretTarot(drawn: DrawnCard[], question: string | undefined):
   }
 }
 
-/** Carta do dia: gratuita, estável (mesma carta o dia todo), nunca falha. */
+/** Carta do dia: estável (mesma carta o dia todo), nunca falha. Grátis = significado tradicional (custo zero); assinante = mensagem personalizada por IA. */
 export async function getDailyTarot(user: CurrentUser): Promise<Reading> {
   const date = todayBR();
   const existing = await prisma.reading.findFirst({
@@ -94,7 +95,7 @@ export async function getDailyTarot(user: CurrentUser): Promise<Reading> {
   if (existing) return existing;
   await guard(user, "tarot-daily", 5);
   const cards = drawCards(`${user.id}:${date}`, 1);
-  const reading = await interpretTarot(cards, undefined);
+  const reading = PLANS[effectivePlan(user)].limits.aiDailyCard ? await interpretTarot(cards, undefined) : null;
   return prisma.reading.create({ data: { userId: user.id, kind: "TAROT_DAILY", input: json({ date }), output: json({ cards, reading } satisfies TarotOutput) } });
 }
 

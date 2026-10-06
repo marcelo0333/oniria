@@ -1,4 +1,5 @@
 import type { UsageKind } from "@prisma/client";
+import { effectivePlan, SUBSCRIBER_DISCOUNT } from "./plans";
 
 /** Catálogo de consultas avulsas (pagamento único, Pix ou cartão). Preços em centavos (BRL). */
 export type Product = {
@@ -13,7 +14,7 @@ export type Product = {
   icon: string;
   href: string; // onde o crédito é usado no app
   highlight?: boolean;
-  exclusive?: boolean; // não incluso nos planos Grátis/Místico
+  exclusive?: boolean; // vendido só como consulta avulsa (assinantes têm desconto)
 };
 
 export const PRODUCTS: Product[] = [
@@ -111,3 +112,12 @@ export const PRODUCT_BY_ID = Object.fromEntries(PRODUCTS.map((p) => [p.id, p])) 
 export const productForKind = (kind: UsageKind): Product | undefined => PRODUCTS.find((p) => p.kind === kind && p.quantity === 1);
 
 export const formatCents = (cents: number) => (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+type Buyer = Parameters<typeof effectivePlan>[0];
+
+/** Preço para a pessoa: assinantes pagam com desconto (arredondado para terminar em ,90). */
+export function priceFor(product: Product, user: Buyer | null): number {
+  if (!user || effectivePlan(user) === "FREE") return product.amount;
+  const discounted = Math.round(product.amount * (1 - SUBSCRIBER_DISCOUNT));
+  return Math.max(190, Math.floor(discounted / 100) * 100 + 90);
+}

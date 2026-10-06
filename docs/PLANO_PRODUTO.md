@@ -54,26 +54,39 @@ Diferencial: **sonho + astrologia + imagens geradas por IA** (nenhum app popular
 
 ### Retenção e receita
 13. **E-mail matinal opcional** (horóscopo + lembrete de registrar o sonho) via cron.
-14. **Planos**: Grátis · Místico · Oráculo (mensal/anual, Stripe: cartão + Pix) com limites mensais por recurso.
+14. **Planos (paid-first)**: Grátis = degustação única · Místico (plano único, mensal/anual, teste grátis com cartão) + consultas avulsas no Pix/cartão.
 15. **Portal de assinatura** (trocar cartão, cancelar) via Stripe Customer Portal.
 16. Backlog pós-lançamento: login Google, programa de indicação, app PWA/push, relatório PDF anual ("Seu ano onírico"), loja de créditos avulsos, leitura por vídeo/áudio.
 
-## 4. Planos e preços (sugestão inicial, BRL)
+## 4. Modelo de receita: paid-first (revisado)
 
-| | Grátis | **Místico** R$ 19,90/mês · R$ 179/ano | **Oráculo** R$ 39,90/mês · R$ 359/ano |
-|---|---|---|---|
-| Interpretações de sonhos/mês | 3 | 30 | 150 (uso justo) |
-| Imagens por sonho | 1 | 2 | 2 |
-| Mapa astral (leituras/mês) | 1 | 3 | 10 |
-| Tarot: carta do dia | ✔ | ✔ | ✔ |
-| Tarot 3 cartas /mês | 1 | 15 | 60 |
-| Compatibilidade /mês | 2 | 15 | 60 |
-| Numerologia /mês | 1 | 5 | 20 |
-| Diário | 30 sonhos | ilimitado | ilimitado |
-| Compartilhar sonho | ✔ | ✔ | ✔ |
-| E-mail matinal | ✔ | ✔ | ✔ |
+O produto é feito para **pagantes**. O grátis existe só para provar valor e levar à compra; ele **não sustenta uso contínuo sem pagar**.
 
-Custo de IA por interpretação ≈ centavos; margem bruta > 85% nos planos pagos. Revisar com dados reais após 30 dias.
+| | **Grátis (degustação)** | **Místico** — R$ 29,90/mês · R$ 239/ano (−33%) |
+|---|---|---|
+| Interpretação de sonhos | **1, uma única vez** (não renova) | até 40/mês, 2 imagens |
+| Sonhos seguintes | **salvos bloqueados** → desbloqueio por assinatura ou R$ 4,90 | — |
+| Mapa astral | cálculo + Sol/Lua/Ascendente; **leitura bloqueada** | leitura completa (2/mês) |
+| Carta do dia | significado tradicional (custo zero); **mensagem personalizada bloqueada** | personalizada por IA |
+| Compatibilidade / numerologia | pontuação e números calculados; **leitura bloqueada** | 10 e 3 leituras/mês |
+| Tarot 3 cartas | bloqueado | 20/mês |
+| Revolução Solar | avulsa R$ 29,90 | avulsa com 30% off (R$ 20,90) |
+| Diário | até 10 sonhos | ilimitado |
+
+- **Teste grátis** de 3 dias (configurável em `STRIPE_TRIAL_DAYS`), **com cartão**, 1 vez por pessoa e com limites reduzidos (3 sonhos, 1 mapa…) para não gerar custo antes da 1ª cobrança.
+- **Sem plano de luxo**: o antigo Oráculo foi removido. Ele prometia suporte prioritário (inviável sem equipe) e limites que comiam a margem.
+- **Suporte enxuto**: tudo é autoatendimento (portal Stripe, exportar/excluir dados, FAQ). O e-mail responde em até 3 dias úteis.
+
+### Gatilhos de compra implementados
+1. **Sonho bloqueado**: depois da degustação, a pessoa escreve o sonho, ele é salvo e a interpretação aparece desfocada com "Testar 3 dias grátis" e "Desbloquear só esta · R$ 4,90". O esforço de escrever já foi investido.
+2. **Prévias grátis sem custo**: pontuação de compatibilidade, números da numerologia, mapa calculado, carta do dia. O cálculo é determinístico (custo zero) e a leitura por IA fica atrás do paywall.
+3. **2ª imagem bloqueada** ao lado da primeira no sonho grátis.
+4. **Banner de upgrade** no painel e no resultado do 1º sonho, com a contagem de sonhos esperando.
+5. **Oferta no momento do bloqueio**: assinatura com teste ou consulta avulsa daquele recurso. Depois de pagar, o app volta para onde a pessoa estava ("Continuar de onde parei").
+6. **E-mail diário**: para quem não paga e tem sonho bloqueado, o assunto muda para "Seu sonho ainda espera ser interpretado" e leva direto ao paywall.
+7. **Desconto de assinante (30%) nas avulsas**: incentiva assinar quem compra avulso com frequência.
+
+Análise financeira detalhada: [`FINANCEIRO.md`](./FINANCEIRO.md).
 
 ## 4.1 Consultas avulsas (pagamento único) — nova modalidade
 
@@ -81,7 +94,7 @@ Para quem não quer assinatura (grande parte do público místico compra "uma co
 
 | Consulta | Preço | Observação |
 |---|---|---|
-| ☀️ **Revolução Solar** — previsões do ano astrológico | **R$ 29,90** | **Produto-âncora exclusivo**: só avulso (ou incluso no Oráculo, 1/mês). Mapa calculado no instante exato do retorno do Sol + leitura do ano por trimestre |
+| ☀️ **Revolução Solar** — previsões do ano astrológico | **R$ 29,90** | **Produto-âncora exclusivo**: só avulso (assinante paga R$ 20,90). Mapa calculado no instante exato do retorno do Sol + leitura do ano por trimestre |
 | ✨ Leitura do Mapa Astral | R$ 14,90 | |
 | 🌙 Interpretação de sonho | R$ 4,90 | entrada de baixo atrito |
 | 🌌 Pacote 5 sonhos | R$ 17,90 | ancoragem: "economize 27%" |

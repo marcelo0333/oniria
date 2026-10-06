@@ -24,7 +24,7 @@ export type Interval = "month" | "year";
 /** Descobre o plano a partir do price ID configurado nas variáveis de ambiente. */
 export function planFromPriceId(priceId: string | undefined | null): PaidPlan | null {
   if (!priceId) return null;
-  for (const plan of ["MISTICO", "ORACULO"] as const) {
+  for (const plan of ["MISTICO"] as const) {
     for (const interval of ["month", "year"] as const) {
       if (env.stripePrice(plan, interval) === priceId) return plan;
     }
@@ -39,10 +39,17 @@ export async function ensureCustomer(user: CurrentUser): Promise<string> {
   return customer.id;
 }
 
+/** Teste grátis: só na primeira assinatura da pessoa. */
+export function trialDaysFor(user: { trialUsedAt: Date | null; stripeSubscriptionId: string | null; subscriptionStatus: string | null }): number {
+  if (user.trialUsedAt || user.stripeSubscriptionId || user.subscriptionStatus) return 0;
+  return env.trialDays();
+}
+
 export async function createCheckoutUrl(user: CurrentUser, plan: PaidPlan, interval: Interval): Promise<string> {
   const price = env.stripePrice(plan, interval);
   if (!price) throw new Error(`Preço não configurado: ${plan}/${interval}`);
   const customer = await ensureCustomer(user);
+  const trial = trialDaysFor(user);
   const session = await getStripe().checkout.sessions.create({
     mode: "subscription",
     customer,
@@ -51,7 +58,11 @@ export async function createCheckoutUrl(user: CurrentUser, plan: PaidPlan, inter
     allow_promotion_codes: true,
     billing_address_collection: "auto",
     locale: "pt-BR",
-    subscription_data: { metadata: { userId: user.id, plan } },
+    subscription_data: {
+      metadata: { userId: user.id, plan },
+      ...(trial > 0 ? { trial_period_days: trial, trial_settings: { end_behavior: { missing_payment_method: "cancel" } } } : {}),
+    },
+    payment_method_collection: "always", // cartão exigido mesmo no teste: a cobrança acontece sozinha ao fim dele
     metadata: { userId: user.id, plan },
     success_url: `${env.appUrl}/app/assinatura?status=success`,
     cancel_url: `${env.appUrl}/precos?status=canceled`,
@@ -88,6 +99,7 @@ export async function syncSubscription(sub: Stripe.Subscription) {
       subscriptionStatus: sub.status,
       plan: ended || !plan ? "FREE" : plan,
       currentPeriodEnd: item?.current_period_end ? new Date(item.current_period_end * 1000) : null,
+      ...(sub.trial_end && !user.trialUsedAt ? { trialUsedAt: new Date() } : {}),
       cancelAtPeriodEnd: !ended && (sub.cancel_at_period_end || !!sub.cancel_at),
     },
   });

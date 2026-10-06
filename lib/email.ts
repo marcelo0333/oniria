@@ -62,14 +62,23 @@ export function sendPasswordResetEmail(to: string, token: string) {
   );
 }
 
-export function sendDailyEmail(to: string, name: string, signName: string, horoscope: string, moon: string, unsubscribe: string) {
+export type DailyHook = { lockedDreamId?: string; lockedCount: number; paid: boolean };
+
+export function sendDailyEmail(to: string, name: string, signName: string, horoscope: string, moon: string, unsubscribe: string, hook: DailyHook = { lockedCount: 0, paid: true }) {
+  // gatilho de compra: sonho salvo e bloqueado tem prioridade sobre o lembrete genérico
+  const locked = !hook.paid && hook.lockedCount > 0 && hook.lockedDreamId;
+  const extra = locked
+    ? `<p style="background:#2e1065;border-radius:12px;padding:12px 14px">🔒 Você tem <strong>${hook.lockedCount} sonho(s)</strong> esperando para ser interpretado(s). O que ele quer te dizer?</p>`
+    : !hook.paid
+      ? `<p style="color:#a1a1aa">No plano Místico, a carta do dia vem com uma mensagem só para você e seus sonhos são interpretados com a Lua da noite.</p>`
+      : `<p style="color:#a1a1aa">Acordou lembrando de um sonho? Registre agora, antes que ele se dissolva.</p>`;
   return sendEmail(
     to,
-    `Seu horóscopo de hoje — ${signName}`,
+    locked ? `Seu sonho ainda espera ser interpretado — ${signName}` : `Seu horóscopo de hoje — ${signName}`,
     layout(
       `Bom dia, ${name.split(" ")[0]} 🌙`,
-      `<p><strong>${escape(moon)}</strong></p><p>${escape(horoscope)}</p><p style="color:#a1a1aa">Acordou lembrando de um sonho? Registre agora, antes que ele se dissolva.</p>`,
-      { label: "Registrar meu sonho", url: `${env.appUrl}/app/sonhos/novo` },
+      `<p><strong>${escape(moon)}</strong></p><p>${escape(horoscope)}</p>${extra}`,
+      locked ? { label: "Revelar meu sonho", url: `${env.appUrl}/app/sonhos/${hook.lockedDreamId}` } : { label: "Registrar meu sonho", url: `${env.appUrl}/app/sonhos/novo` },
       unsubscribe,
     ),
     { "List-Unsubscribe": `<${unsubscribe}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },

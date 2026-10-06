@@ -17,10 +17,27 @@ describe("planos", () => {
   it("assinatura cancelada volta para o grátis", () => expect(effectivePlan({ ...base, subscriptionStatus: "canceled" })).toBe("FREE"));
   it("assinatura vencida há mais de 3 dias volta para o grátis", () => expect(effectivePlan({ ...base, currentPeriodEnd: new Date(Date.now() - 4 * 86400e3) })).toBe("FREE"));
   it("past_due mantém acesso (carência)", () => expect(effectivePlan({ ...base, subscriptionStatus: "past_due" })).toBe("MISTICO"));
-  it("limites crescem do grátis ao oráculo", () => {
-    expect(PLANS.FREE.limits.DREAM).toBeLessThan(PLANS.MISTICO.limits.DREAM);
-    expect(PLANS.MISTICO.limits.DREAM).toBeLessThan(PLANS.ORACULO.limits.DREAM);
+  it("grátis é degustação única e sem custo recorrente de IA", () => {
+    expect(PLANS.FREE.period).toBe("lifetime");
+    expect(PLANS.FREE.limits.DREAM).toBe(1);
+    expect(PLANS.FREE.limits.aiDailyCard).toBe(false);
+    for (const k of ["ASTRAL", "TAROT_THREE", "COMPATIBILITY", "NUMEROLOGY", "SOLAR_RETURN"] as const) expect(PLANS.FREE.limits[k]).toBe(0);
     expect(PLANS.MISTICO.priceYearly).toBeLessThan(PLANS.MISTICO.priceMonthly * 12);
+  });
+  it("teste grátis usa limites reduzidos e janela da cota", async () => {
+    const { limitFor, quotaWindowStart, TRIAL_LIMITS } = await import("@/lib/plans");
+    expect(limitFor({ ...base, subscriptionStatus: "trialing" }, "DREAM")).toBe(TRIAL_LIMITS.DREAM);
+    expect(limitFor(base, "DREAM")).toBe(PLANS.MISTICO.limits.DREAM);
+    expect(quotaWindowStart({ plan: "FREE", subscriptionStatus: null, currentPeriodEnd: null }).getTime()).toBe(0);
+    expect(quotaWindowStart(base).getUTCDate()).toBe(1);
+  });
+  it("assinante paga 30% menos na consulta avulsa (preço terminando em ,90)", async () => {
+    const { PRODUCT_BY_ID, priceFor } = await import("@/lib/products");
+    const solar = PRODUCT_BY_ID["revolucao-solar"];
+    expect(priceFor(solar, null)).toBe(2990);
+    expect(priceFor(solar, { plan: "FREE", subscriptionStatus: null, currentPeriodEnd: null })).toBe(2990);
+    expect(priceFor(solar, base)).toBe(2090);
+    expect(priceFor(PRODUCT_BY_ID["sonho"], base)).toBe(390);
   });
   it("início do mês em UTC", () => expect(monthStart(new Date("2026-03-17T10:00:00Z")).toISOString()).toBe("2026-03-01T00:00:00.000Z"));
 });

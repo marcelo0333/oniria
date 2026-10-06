@@ -11,8 +11,7 @@ if (!key) { console.error("Defina STRIPE_SECRET_KEY"); process.exit(1); }
 const stripe = new Stripe(key);
 
 const CATALOG = [
-  { plan: "MISTICO", name: "Oniria Místico", description: "30 interpretações/mês, mapa astral completo, tarot e mais.", month: 1990, year: 17900 },
-  { plan: "ORACULO", name: "Oniria Oráculo", description: "Limites 4× maiores e suporte prioritário.", month: 3990, year: 35900 },
+  { plan: "MISTICO", name: "Oniria Místico", description: "Até 40 sonhos interpretados por mês, mapa astral, tarot, compatibilidade e numerologia.", month: 2990, year: 23900 },
 ];
 
 async function ensureProduct(plan, name, description) {
@@ -22,7 +21,7 @@ async function ensureProduct(plan, name, description) {
 }
 
 async function ensurePrice(product, plan, interval, amount) {
-  const lookup_key = `oniria_${plan.toLowerCase()}_${interval}`;
+  const lookup_key = `oniria_${plan.toLowerCase()}_${interval}_${amount}`; // preço novo = lookup_key nova (preços do Stripe são imutáveis)
   const found = await stripe.prices.list({ lookup_keys: [lookup_key], active: true, limit: 1 });
   if (found.data[0]) return found.data[0];
   return stripe.prices.create({ product: product.id, currency: "brl", unit_amount: amount, recurring: { interval }, lookup_key, metadata: { oniria_plan: plan } });

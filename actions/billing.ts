@@ -9,7 +9,7 @@ import { PRODUCT_BY_ID } from "@/lib/products";
 import { rateLimit } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
 
-const CheckoutSchema = z.object({ plan: z.enum(["MISTICO", "ORACULO"]), interval: z.enum(["month", "year"]) });
+const CheckoutSchema = z.object({ plan: z.enum(["MISTICO"]), interval: z.enum(["month", "year"]) });
 
 export async function startCheckout(formData: FormData) {
   const user = await getCurrentUser();
@@ -44,6 +44,7 @@ export async function openPortal() {
 /** Consulta avulsa: pagamento único (Pix ou cartão) que gera créditos para o recurso. */
 export async function buyProduct(formData: FormData) {
   const productId = String(formData.get("productId") ?? "");
+  const next = String(formData.get("next") ?? "") || undefined;
   if (!PRODUCT_BY_ID[productId]) redirect("/consultas");
   const user = await getCurrentUser();
   if (!user) redirect(`/cadastro?next=${encodeURIComponent(`/consultas?comprar=${productId}`)}`);
@@ -52,7 +53,7 @@ export async function buyProduct(formData: FormData) {
   if (!rl.ok) redirect("/consultas?status=limite");
   let url: string;
   try {
-    url = await createOneTimeCheckoutUrl(user, productId);
+    url = await createOneTimeCheckoutUrl(user, productId, next);
   } catch (error) {
     logger.error("Falha ao criar checkout avulso", error, { userId: user.id, productId });
     redirect("/consultas?status=erro");

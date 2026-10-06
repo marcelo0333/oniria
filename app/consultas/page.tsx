@@ -3,6 +3,7 @@ import SiteShell, { PageContainer } from "@/components/layout/SiteShell";
 import ProductGrid from "@/components/sections/ProductGrid";
 import { ButtonLink } from "@/components/ui/Button";
 import { PRODUCT_BY_ID } from "@/lib/products";
+import { getCurrentUser } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Consultas avulsas: Revolução Solar, mapa astral, tarot e sonhos",
@@ -13,12 +14,12 @@ export const metadata: Metadata = {
 const FAQ = [
   ["Preciso assinar um plano?", "Não. A consulta avulsa é um pagamento único. O crédito fica na sua conta e você usa quando quiser — ele não expira."],
   ["Como pago?", "Com Pix ou cartão de crédito, em ambiente seguro da Stripe. Pagamentos por Pix são confirmados em poucos instantes."],
-  ["E se eu já for assinante?", "Os créditos avulsos somam com o seu plano: primeiro usamos a cota mensal, depois os créditos."],
+  ["E se eu já for assinante?", "Assinantes do Místico pagam 30% menos nas consultas avulsas. Os créditos somam com o plano: primeiro usamos a cota mensal, depois os créditos."],
   ["Posso pedir reembolso?", "Sim, em até 7 dias após a compra, se a consulta ainda não tiver sido utilizada."],
 ];
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ comprar?: string; status?: string }> }) {
-  const { comprar, status } = await searchParams;
+  const [{ comprar, status }, user] = await Promise.all([searchParams, getCurrentUser()]);
   const selected = comprar && PRODUCT_BY_ID[comprar] ? PRODUCT_BY_ID[comprar] : undefined;
   return (
     <SiteShell>
@@ -33,7 +34,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ c
           {status === "erro" && <p className="mt-4 text-sm text-red-300">Não foi possível iniciar o pagamento. Tente novamente.</p>}
           {status === "limite" && <p className="mt-4 text-sm text-red-300">Muitas tentativas de compra. Aguarde alguns minutos.</p>}
         </header>
-        <ProductGrid highlightId={selected?.id} />
+        <ProductGrid highlightId={selected?.id} user={user} />
         <section className="mx-auto mt-16 max-w-3xl">
           <h2 className="mb-6 text-center text-2xl font-semibold">Perguntas frequentes</h2>
           <div className="space-y-3">
@@ -44,7 +45,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ c
               </details>
             ))}
           </div>
-          <p className="mt-10 text-center text-zinc-400">Usa com frequência? <ButtonLink href="/precos" variant="ghost" size="sm">Os planos saem mais em conta →</ButtonLink></p>
+          <p className="mt-10 text-center text-zinc-400">Usa com frequência? <ButtonLink href="/precos" variant="ghost" size="sm">O plano Místico sai bem mais em conta →</ButtonLink></p>
         </section>
       </PageContainer>
     </SiteShell>

@@ -7,7 +7,9 @@ import { moonInfo } from "@/lib/mystic/astro";
 import { getSign } from "@/lib/mystic/signs";
 import { getHoroscope } from "@/lib/services/horoscope";
 import { usageSummary } from "@/lib/usage";
-import { effectivePlan, PLANS } from "@/lib/plans";
+import { effectivePlan, PLANS, isPaid, isTrialing } from "@/lib/plans";
+import UpgradeBanner from "@/components/sections/UpgradeBanner";
+import { Lock } from "lucide-react";
 import type { TarotOutput } from "@/lib/services/readings";
 import MoonCard from "@/components/mystic/MoonCard";
 import HoroscopeCard from "@/components/mystic/HoroscopeCard";
@@ -28,11 +30,13 @@ export default async function Dashboard() {
     sign ? getHoroscope(sign.slug, date) : null,
     prisma.reading.findFirst({ where: { userId: user.id, kind: "TAROT_DAILY", input: { path: ["date"], equals: date } } }),
     usageSummary(user),
-    prisma.dream.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 3, select: { id: true, title: true, createdAt: true, moonPhase: true } }),
+    prisma.dream.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 3, select: { id: true, title: true, createdAt: true, moonPhase: true, interpretation: true } }),
   ]);
   const moon = moonInfo(new Date());
   const plan = effectivePlan(user);
+  const paid = isPaid(user);
   const dreamUsage = usage.find((u) => u.kind === "DREAM")!;
+  const lockedDreams = recent.filter((d) => !d.interpretation).length;
 
   return (
     <div className="space-y-8">
@@ -46,12 +50,25 @@ export default async function Dashboard() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <MoonCard moon={moon} />
-        <Card>
-          <SectionTitle sub={`Plano ${PLANS[plan].name} · renova todo mês`}>Seu uso este mês</SectionTitle>
-          <div className="space-y-3">{usage.filter((u) => u.limit > 0).slice(0, 3).map((u) => <UsageMeter key={u.kind} label={u.label} used={u.used} limit={u.limit} credits={u.credits} />)}</div>
-          {dreamUsage.used >= dreamUsage.limit && plan === "FREE" && <p className="mt-3 text-sm text-amber-300">Você usou todas as interpretações do mês. <Link href="/precos" className="underline">Faça upgrade</Link>.</p>}
-        </Card>
+        {paid ? (
+          <Card>
+            <SectionTitle sub={isTrialing(user) ? "Teste grátis · limites ampliam após a 1ª cobrança" : `Plano ${PLANS[plan].name} · renova todo mês`}>Seu uso este mês</SectionTitle>
+            <div className="space-y-3">{usage.filter((u) => u.limit > 0).slice(0, 3).map((u) => <UsageMeter key={u.kind} label={u.label} used={u.used} limit={u.limit} credits={u.credits} />)}</div>
+          </Card>
+        ) : (
+          <Card>
+            <SectionTitle sub="Plano Grátis">Sua conta</SectionTitle>
+            <ul className="space-y-2 text-sm">
+              <li className="flex justify-between"><span className="text-zinc-300">Interpretações disponíveis</span><span className={dreamUsage.available > 0 ? "text-emerald-300" : "text-amber-300"}>{dreamUsage.available}</span></li>
+              {lockedDreams > 0 && <li className="flex justify-between"><span className="text-zinc-300">Sonhos aguardando interpretação</span><span className="text-purple-200">🔒 {lockedDreams}</span></li>}
+              <li className="flex justify-between"><span className="text-zinc-300">Leitura do mapa astral</span><span className="text-zinc-500">🔒 Místico</span></li>
+              <li className="flex justify-between"><span className="text-zinc-300">Carta do dia personalizada</span><span className="text-zinc-500">🔒 Místico</span></li>
+            </ul>
+          </Card>
+        )}
       </div>
+
+      {!paid && <UpgradeBanner user={user} headline={lockedDreams > 0 ? `Você tem ${lockedDreams} sonho(s) esperando para serem interpretados` : undefined} />}
 
       <Link href="/app/revolucao-solar" className="block rounded-2xl border border-amber-300/30 bg-linear-to-r from-amber-500/10 via-pink-500/10 to-purple-500/10 p-5 transition hover:border-amber-300/60">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -73,8 +90,13 @@ export default async function Dashboard() {
       )}
 
       <section>
-        <SectionTitle sub="Uma carta, uma mensagem para o seu dia. Gratuita para todos.">Carta do dia</SectionTitle>
-        {daily ? <TarotView output={daily.output as unknown as TarotOutput} /> : <ActionButton action={dailyTarotAction} pendingText="Embaralhando…">🃏 Revelar minha carta do dia</ActionButton>}
+        <SectionTitle sub="Uma carta, uma mensagem para o seu dia.">Carta do dia</SectionTitle>
+        {daily ? (
+          <TarotView
+            output={daily.output as unknown as TarotOutput}
+            lockedNote={!paid && <Link href="/precos" className="mx-auto flex max-w-md items-center justify-center gap-2 rounded-xl border border-purple-400/30 bg-purple-500/10 px-4 py-3 text-sm text-purple-100 hover:bg-purple-500/20"><Lock className="h-4 w-4" /> A mensagem personalizada desta carta para você é exclusiva do plano Místico</Link>}
+          />
+        ) : <ActionButton action={dailyTarotAction} pendingText="Embaralhando…">🃏 Revelar minha carta do dia</ActionButton>}
       </section>
 
       <section>
@@ -86,7 +108,7 @@ export default async function Dashboard() {
             {recent.map((d) => (
               <li key={d.id}>
                 <Link href={`/app/sonhos/${d.id}`} className="block h-full rounded-xl border border-white/10 bg-white/5 p-4 transition hover:border-purple-400/40">
-                  <p className="font-semibold text-zinc-100">{d.title}</p>
+                  <p className="font-semibold text-zinc-100">{!d.interpretation && "🔒 "}{d.title}</p>
                   <p className="mt-1 text-xs text-zinc-500">{formatDateBR(d.createdAt, { dateStyle: "medium" })}{d.moonPhase ? ` · ${d.moonPhase}` : ""}</p>
                 </Link>
               </li>

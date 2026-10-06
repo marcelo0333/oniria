@@ -10,7 +10,7 @@ Legenda: 🧾 financeiro/legal · 🌐 infra · 🔑 contas/chaves · ✅ valida
 
 ## Resumo: o que falta (e quem faz)
 
-> Situação: **produto completo** — assinaturas (Grátis/Místico/Oráculo) **e consultas avulsas** (Revolução Solar, mapa, sonhos, tarot, compatibilidade, numerologia; Pix ou cartão). Falta apenas a **camada financeira e legal** abaixo + chaves de produção.
+> Situação: **produto completo, modelo paid-first** — degustação grátis + plano único Místico (com teste grátis) **e consultas avulsas** (Revolução Solar, mapa, sonhos, tarot, compatibilidade, numerologia; Pix ou cartão). Falta apenas a **camada financeira e legal** abaixo + chaves de produção.
 
 | # | Item | Tipo | Quem | Prazo típico |
 |---|---|---|---|---|
@@ -44,12 +44,13 @@ Legenda: 🧾 financeiro/legal · 🌐 infra · 🔑 contas/chaves · ✅ valida
 ## 3. 🧾🔑 Stripe (pagamentos)
 1. Crie a conta em stripe.com/br, país **Brasil**, e conclua a **ativação** (dados da empresa, sócios, conta bancária PJ, descrição do negócio: *"assinatura de aplicativo de autoconhecimento: sonhos e astrologia"*). Informe o site já no ar (passo 5/6) — o Stripe revisa a URL, os Termos e a política de reembolso.
 2. **Ative cartões e Pix** em *Configurações → Pagamentos → Métodos de pagamento*. As **consultas avulsas** usam os métodos dinâmicos do Checkout: com Pix ativo, ele aparece automaticamente (sem mudar código). Assinaturas usam cartão (Pix recorrente depende do *Pix Automático* — confirme no painel antes de prometer).
-3. Em **modo de teste**, rode `STRIPE_SECRET_KEY=sk_test_... APP_URL=https://staging.seudominio.com.br node scripts/stripe-setup.mjs` — cria produtos, 4 preços de assinatura (R$ 19,90/179,00 e R$ 39,90/359,00), o **Portal do Cliente** e o **webhook** (com os eventos de assinatura **e** de pagamento único: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`, `charge.refunded`) e imprime `STRIPE_PRICE_*` e `STRIPE_WEBHOOK_SECRET`. As consultas avulsas não precisam de cadastro de preço: valores ficam em `lib/products.ts`.
+3. Em **modo de teste**, rode `STRIPE_SECRET_KEY=sk_test_... APP_URL=https://staging.seudominio.com.br node scripts/stripe-setup.mjs` — cria o produto Místico com 2 preços (R$ 29,90/mês e R$ 239/ano), o **Portal do Cliente** e o **webhook** (com os eventos de assinatura **e** de pagamento único: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`, `charge.refunded`) e imprime `STRIPE_PRICE_*` e `STRIPE_WEBHOOK_SECRET`. As consultas avulsas não precisam de cadastro de preço: valores ficam em `lib/products.ts`.
 4. Em **modo live**, repita com `sk_live_...` e o domínio de produção.
 5. Painel Stripe → *Configurações → Faturamento → Portal do cliente*: confirme cancelamento "ao fim do período", troca de plano e atualização de cartão.
-6. Painel → *Radar*: mantenha as regras padrão antifraude; ative e-mails de recibo e de falha de pagamento (*Configurações → E-mails*), pois a Oniria não reenvia recibos.
-7. **Taxas**: confira em stripe.com/br/pricing (cartão doméstico costuma ser ~3,99% + R$ 0,39 por cobrança, valores sujeitos a alteração). Considere no preço.
-8. **Repasses**: o primeiro payout pode ter prazo maior (política de risco de contas novas). Planeje caixa para os custos de IA nesse período.
+6. **Teste grátis** (`STRIPE_TRIAL_DAYS`, padrão 3): ative em *Configurações → Faturamento → Assinaturas e e-mails* o **lembrete antes do fim do teste** (exigido pelas bandeiras de cartão) e o e-mail de "teste terminando". O teste exige cartão e vale 1 vez por pessoa (controle em `User.trialUsedAt`).
+7. Painel → *Radar*: mantenha as regras padrão antifraude; ative e-mails de recibo e de falha de pagamento (*Configurações → E-mails*), pois a Oniria não reenvia recibos.
+8. **Taxas**: confira em stripe.com/br/pricing (cartão doméstico costuma ser ~3,99% + R$ 0,39 por cobrança, valores sujeitos a alteração). Considere no preço.
+9. **Repasses**: o primeiro payout pode ter prazo maior (política de risco de contas novas). Planeje caixa para os custos de IA nesse período.
 
 > Alternativas se o Stripe recusar a conta: Mercado Pago, Pagar.me, Asaas ou Iugu (exigiria trocar `lib/stripe.ts` e o webhook; a lógica de planos/cotas é independente do provedor).
 
@@ -106,7 +107,7 @@ Em **staging** (mesma infra, Stripe em modo teste):
 7. Cron: `curl -H "Authorization: Bearer $CRON_SECRET" "https://seudominio.com.br/api/cron/daily?task=horoscopes"` e `?task=emails` → 200. No Vercel os dois já estão agendados em `vercel.json` (00h05 e 07h de Brasília).
 8. Exclusão de conta (LGPD) cancela a assinatura e apaga os dados; exportação JSON baixa.
 9. Lighthouse (mobile) ≥ 90 nas páginas públicas; teste em iOS Safari e Android Chrome.
-10. **Compra real** de R$ 4,90 (sonho avulso, via Pix) e de R$ 19,90 em live com seu próprio cartão → depois **reembolse**. Confirme o recebimento no Stripe e a emissão da NFS-e.
+10. **Compra real** de R$ 4,90 (sonho avulso, via Pix) e uma assinatura de R$ 29,90 (sem teste: use um usuário que já usou o teste ou `STRIPE_TRIAL_DAYS=0` em staging) em live com seu próprio cartão → depois **reembolse**. Confirme o recebimento no Stripe e a emissão da NFS-e.
 
 ## 11. 🌐 Operação e segurança
 - **Monitoramento**: UptimeRobot/Better Stack em `https://seudominio.com.br/api/health` (alerta por e-mail/Telegram). Logs estruturados (JSON) saem em stdout/Vercel Logs. Recomendado: Sentry (`@sentry/nextjs`) para erros.
@@ -133,7 +134,7 @@ Em **staging** (mesma infra, Stripe em modo teste):
 DATABASE_URL            SESSION_SECRET (32+)     APP_URL (https)
 GOOGLE_GENAI_API_KEY    POLLINATIONS_API_KEY     GEMINI_MODEL (opcional)
 STRIPE_SECRET_KEY       STRIPE_WEBHOOK_SECRET
-STRIPE_PRICE_MISTICO_MONTHLY / _YEARLY    STRIPE_PRICE_ORACULO_MONTHLY / _YEARLY
+STRIPE_PRICE_MISTICO_MONTHLY / _YEARLY    STRIPE_TRIAL_DAYS (padrão 3)
 RESEND_API_KEY          EMAIL_FROM               SUPPORT_EMAIL
 CRON_SECRET             COMPANY_NAME / COMPANY_CNPJ / COMPANY_ADDRESS / DPO_EMAIL
 ```

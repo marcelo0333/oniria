@@ -42,64 +42,75 @@ try {
   ok("dashboard mostra horóscopo do signo", await page.locator("text=Touro").count() > 0);
 
   await page.click('button:has-text("Revelar minha carta do dia")');
-  await page.waitForSelector("text=Conselho", { timeout: 20000 });
-  ok("carta do dia gerada", true);
+  await page.waitForSelector("text=exclusiva do plano Místico", { timeout: 20000 });
+  ok("grátis: carta do dia sem IA + gatilho de upgrade", true);
 
+  // ── degustação: 1º sonho interpretado ──
   await page.goto(`${BASE}/app/sonhos/novo`);
   await page.fill('textarea[name=description]', "Eu estava num farol à beira de um mar escuro, e a lua cheia iluminava as ondas.");
   await page.click('button:has-text("Interpretar meu sonho")');
   await page.waitForURL(/\/app\/sonhos\/[0-9a-f-]{36}/, { timeout: 30000 });
   await page.waitForSelector("text=O Farol na Maré da Lua", { timeout: 10000 });
-  ok("sonho interpretado e salvo", true);
+  ok("1º sonho interpretado grátis", true);
+  ok("grátis: 2ª imagem bloqueada + banner de upgrade", (await page.locator("text=exclusiva do plano Místico").count()) > 0 && (await page.locator("text=Gostou?").count()) > 0);
   const dreamUrl = page.url();
-
   await page.click('button:has-text("Gerar link público")');
   await page.waitForSelector('button:has-text("Compartilhar")', { timeout: 10000 });
   ok("link público gerado", true);
 
+  // ── 2º sonho: salvo bloqueado (sem custo de IA) com paywall ──
+  await page.goto(`${BASE}/app/sonhos/novo`);
+  ok("aviso de que o próximo sonho fica bloqueado", (await page.locator("text=a interpretação é desbloqueada").count()) > 0);
+  await page.fill('textarea[name=description]', "Sonhei que eu voava sobre uma cidade antiga cheia de torres douradas ao amanhecer.");
+  await page.click('button:has-text("Interpretar meu sonho")');
+  await page.waitForURL(/\/app\/sonhos\/[0-9a-f-]{36}/, { timeout: 30000 });
+  await page.waitForSelector("text=Seu sonho foi salvo no diário", { timeout: 10000 });
+  ok("2º sonho salvo bloqueado com paywall", (await page.locator('button:has-text("Desbloquear só esta")').count()) > 0 && (await page.locator('button:has-text("dias grátis")').count()) > 0);
+  const lockedUrl = page.url();
   await page.goto(`${BASE}/app/sonhos`);
-  ok("sonho aparece no diário", await page.locator("text=O Farol na Maré da Lua").count() > 0);
+  ok("diário marca sonho aguardando interpretação", (await page.locator("text=aguardando interpretação").count()) > 0);
 
+  // ── paywalls com prévia gratuita ──
   await page.goto(`${BASE}/app/mapa-astral`);
   await page.waitForSelector("text=Ascendente", { timeout: 15000 });
+  ok("grátis: mapa calculado + paywall da leitura", (await page.locator("text=Sua leitura completa está a um passo").count()) > 0);
+  await page.goto(`${BASE}/app/compatibilidade?a=touro&b=escorpiao`);
+  ok("grátis: pontuação de compatibilidade + paywall da leitura", (await page.locator("text=Touro e Escorpião").count()) > 0 && (await page.locator("text=A leitura completa de Touro e Escorpião").count()) > 0);
+  await page.goto(`${BASE}/app/numerologia?nome=Maria%20da%20Silva&data=1990-05-15`);
+  ok("grátis: números calculados + paywall da leitura", (await page.locator("text=Caminho de vida").count()) > 0 && (await page.locator("text=O que seus números dizem").count()) > 0);
+  await page.goto(`${BASE}/app/tarot`);
+  ok("grátis: tarot de 3 cartas com paywall", (await page.locator("text=Faça sua pergunta às cartas").count()) > 0);
+  await page.goto(`${BASE}/app/revolucao-solar`);
+  ok("revolução solar: mapa calculado + compra avulsa", (await page.locator("text=Mapa da Revolução").count()) > 0 && (await page.locator('button:has-text("Desbloquear só esta")').count()) > 0);
+
+  // ── crédito avulso desbloqueia o sonho salvo ──
+  { const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL }); await pool.query(`INSERT INTO "CreditBalance" ("userId", kind, balance, "updatedAt") SELECT id, 'DREAM', 1, now() FROM "User" WHERE email=$1`, [email]); await pool.end(); }
+  await page.goto(lockedUrl);
+  await page.click('button:has-text("Interpretar este sonho")');
+  await page.waitForSelector("text=Simbolismo", { timeout: 30000 });
+  ok("crédito avulso desbloqueia o sonho salvo", true);
+
+  // ── assinante (Místico ativo): recursos liberados ──
+  { const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL }); await pool.query(`UPDATE "User" SET plan='MISTICO', "subscriptionStatus"='active', "currentPeriodEnd"=now() + interval '30 days' WHERE email=$1`, [email]); await pool.end(); }
+  await page.goto(`${BASE}/app/mapa-astral`);
   await page.click('button:has-text("Gerar minha leitura")');
   await page.waitForSelector("text=Sua essência", { timeout: 30000 });
-  ok("mapa astral + leitura", true);
-
-  await page.goto(`${BASE}/app/compatibilidade`);
-  await page.click('button:has-text("Analisar compatibilidade")');
-  await page.waitForURL(/compatibilidade\?r=/, { timeout: 30000 });
+  ok("assinante: leitura do mapa astral", true);
+  await page.goto(`${BASE}/app/compatibilidade?a=touro&b=escorpiao`);
+  await page.click('button:has-text("Ver a leitura completa do casal")');
+  await page.waitForURL(/compatibilidade\?.*r=/, { timeout: 30000 });
   await page.waitForSelector("text=A dinâmica do casal", { timeout: 10000 });
-  ok("compatibilidade", true);
-
-  await page.goto(`${BASE}/app/numerologia`);
-  await page.fill('input[name=birth]', "1990-05-15");
-  await page.click('button:has-text("Revelar meus números")');
+  ok("assinante: compatibilidade completa", true);
+  await page.goto(`${BASE}/app/numerologia?nome=Maria%20da%20Silva&data=1990-05-15`);
+  await page.click('button:has-text("Ver a leitura completa")');
   await page.waitForURL(/numerologia\?r=/, { timeout: 30000 });
-  await page.waitForSelector("text=Caminho de vida", { timeout: 10000 });
-  ok("numerologia", true);
-
+  ok("assinante: numerologia completa", (await page.locator("text=Caminho de vida").count()) > 0);
   await page.goto(`${BASE}/app/tarot`);
   await page.click('button:has-text("Tirar 3 cartas")');
   await page.waitForURL(/tarot\?r=/, { timeout: 30000 });
-  ok("tarot 3 cartas", await page.locator("text=Passado").count() > 0);
-
-  // cota do plano grátis: 1 tarot de 3 cartas/mês => segunda tentativa deve ser bloqueada
-  await page.click('button:has-text("Tirar 3 cartas")');
-  await page.waitForSelector("text=atingiu o limite", { timeout: 15000 });
-  ok("cota grátis bloqueia 2ª tiragem", true);
-  ok("oferece consulta avulsa quando a cota acaba", await page.locator("text=Comprar Tarot de 3 cartas").count() > 0);
-
-  await page.goto(`${BASE}/app/revolucao-solar`);
-  ok("revolução solar: mapa calculado e oferta de compra", (await page.locator("text=Mapa da Revolução").count()) > 0 && (await page.locator('button:has-text("Comprar por")').count()) > 0);
-
-  // sem Stripe configurado, a compra avulsa avisa que está indisponível (não quebra)
+  ok("assinante: tarot 3 cartas", await page.locator("text=Passado").count() > 0);
   await page.goto(`${BASE}/consultas`);
-  ok("catálogo de consultas avulsas", (await page.locator("text=Revolução Solar").count()) > 0);
-
-  // público: página compartilhada
-  const token = await page.evaluate(async () => null);
-  void token;
+  ok("assinante vê preço com desconto nas avulsas", (await page.locator("text=preço de assinante").count()) > 0);
 
   for (const path of ["/signos", "/signos/escorpiao", "/lua", "/simbolos", "/simbolos/cobra", "/precos", "/consultas", "/termos", "/privacidade", "/contato", "/sitemap.xml", "/robots.txt"]) {
     const res = await page.goto(`${BASE}${path}`);

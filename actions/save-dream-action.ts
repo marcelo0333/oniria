@@ -18,8 +18,8 @@ export async function toggleFavoriteAction(dreamId: string) {
 /** Gera (ou revoga) o link público de compartilhamento. Retorna o token ou null. */
 export async function toggleShareAction(dreamId: string): Promise<string | null> {
   const user = await requireUser();
-  const dream = await prisma.dream.findFirst({ where: { id: dreamId, userId: user.id }, select: { shareToken: true } });
-  if (!dream) return null;
+  const dream = await prisma.dream.findFirst({ where: { id: dreamId, userId: user.id }, select: { shareToken: true, interpretation: true } });
+  if (!dream || (!dream.interpretation && !dream.shareToken)) return null; // só sonhos interpretados podem ser compartilhados
   const shareToken = dream.shareToken ? null : randomBytes(9).toString("base64url");
   await prisma.dream.update({ where: { id: dreamId }, data: { shareToken } });
   revalidatePath(`/app/sonhos/${dreamId}`);

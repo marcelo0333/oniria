@@ -18,24 +18,47 @@ describe.skipIf(!hasDb)("cota e rate limit (Postgres)", () => {
     await prisma.$disconnect();
   });
 
-  it("20 requisições simultâneas nunca estouram a cota (3 de DREAM no plano grátis)", async () => {
+  it("20 requisições simultâneas nunca estouram a cota (1 sonho de boas-vindas no grátis)", async () => {
     const { reserveUsage, QuotaError } = await import("@/lib/usage");
     const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
     const results = await Promise.allSettled(Array.from({ length: 20 }, () => reserveUsage(user, "DREAM")));
     const okCount = results.filter((r) => r.status === "fulfilled").length;
     const quota = results.filter((r) => r.status === "rejected" && r.reason instanceof QuotaError).length;
-    expect(okCount).toBe(3);
+    expect(okCount).toBe(1);
     expect(okCount + quota).toBe(20);
-    expect(await prisma.usageEvent.count({ where: { userId, kind: "DREAM" } })).toBe(3);
+    expect(await prisma.usageEvent.count({ where: { userId, kind: "DREAM" } })).toBe(1);
+  });
+
+  it("degustação grátis não renova: uso de meses anteriores continua contando", async () => {
+    const { reserveUsage, QuotaError } = await import("@/lib/usage");
+    await prisma.usageEvent.updateMany({ where: { userId, kind: "DREAM" }, data: { createdAt: new Date("2020-01-01") } });
+    const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
+    await expect(reserveUsage(user, "DREAM")).rejects.toBeInstanceOf(QuotaError);
+  });
+
+  it("assinante em teste grátis tem limites reduzidos; o uso grátis antigo não conta no mês", async () => {
+    const { reserveUsage, QuotaError } = await import("@/lib/usage");
+    const { TRIAL_LIMITS } = await import("@/lib/plans");
+    const trialUser = await prisma.user.create({ data: { name: "Trial", email: `trial+${Date.now()}@example.com`, password: "x", plan: "MISTICO", subscriptionStatus: "trialing", currentPeriodEnd: new Date(Date.now() + 3 * 86400e3) } });
+    try {
+      for (let i = 0; i < TRIAL_LIMITS.ASTRAL; i++) await reserveUsage(trialUser, "ASTRAL");
+      await expect(reserveUsage(trialUser, "ASTRAL")).rejects.toBeInstanceOf(QuotaError);
+      const active = await prisma.user.update({ where: { id: trialUser.id }, data: { subscriptionStatus: "active" } });
+      await reserveUsage(active, "ASTRAL"); // plano pleno: 2 por mês
+      await expect(reserveUsage(active, "ASTRAL")).rejects.toBeInstanceOf(QuotaError);
+    } finally {
+      await prisma.user.delete({ where: { id: trialUser.id } });
+    }
   });
 
   it("estorno devolve a cota", async () => {
     const { reserveUsage, refundUsage } = await import("@/lib/usage");
     const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
+    await prisma.creditBalance.create({ data: { userId, kind: "NUMEROLOGY", balance: 1 } });
     const id = await reserveUsage(user, "NUMEROLOGY");
     await refundUsage(id);
     expect(await prisma.usageEvent.count({ where: { userId, kind: "NUMEROLOGY" } })).toBe(0);
-    await reserveUsage(user, "NUMEROLOGY");
+    await reserveUsage(user, "NUMEROLOGY"); // o crédito voltou e pode ser usado de novo
   });
 
   it("esgotada a cota do plano, consome créditos avulsos (sem estourar sob concorrência) e o estorno devolve o crédito", async () => {
@@ -51,8 +74,8 @@ describe.skipIf(!hasDb)("cota e rate limit (Postgres)", () => {
     await refundUsage(ids[0]);
     expect((await prisma.creditBalance.findUniqueOrThrow({ where: { userId_kind: { userId, kind: "SOLAR_RETURN" } } })).balance).toBe(1);
     // créditos não contam como uso do plano
-    expect(await usageThisMonth(userId, "SOLAR_RETURN")).toBe(0);
-    // DREAM: cota (3) já usada no teste anterior → próximo consome crédito
+    expect(await usageThisMonth(user, "SOLAR_RETURN")).toBe(0);
+    // DREAM: degustação (1) já usada nos testes anteriores → próximo consome crédito
     await prisma.creditBalance.create({ data: { userId, kind: "DREAM", balance: 1 } });
     const ev = await reserveUsage(user, "DREAM");
     expect((await prisma.usageEvent.findUniqueOrThrow({ where: { id: ev } })).source).toBe("CREDIT");

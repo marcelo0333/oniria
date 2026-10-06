@@ -28,10 +28,10 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-zinc-500">Plano atual</p>
-            <p className="text-2xl font-semibold">{PLANS[plan].name} {paid && <Badge tone="green">{user.subscriptionStatus === "past_due" ? "pagamento pendente" : "ativo"}</Badge>}</p>
+            <p className="text-2xl font-semibold">{PLANS[plan].name} {paid && <Badge tone={user.subscriptionStatus === "past_due" ? "amber" : "green"}>{user.subscriptionStatus === "past_due" ? "pagamento pendente" : user.subscriptionStatus === "trialing" ? "teste grátis" : "ativo"}</Badge>}</p>
             {paid && user.currentPeriodEnd && (
               <p className="mt-1 text-sm text-zinc-400">
-                {user.cancelAtPeriodEnd ? "Cancelamento agendado — acesso até " : "Próxima renovação: "}
+                {user.cancelAtPeriodEnd ? "Cancelamento agendado — acesso até " : user.subscriptionStatus === "trialing" ? "Fim do teste e 1ª cobrança: " : "Próxima renovação: "}
                 {formatDateBR(user.currentPeriodEnd, { dateStyle: "long" })}
               </p>
             )}
@@ -39,7 +39,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
           {paid && billingEnabled() ? (
             <form action={openPortal}><Button type="submit" variant="outline">Gerenciar assinatura</Button></form>
           ) : (
-            <ButtonLink href="/precos">Fazer upgrade</ButtonLink>
+            <ButtonLink href="/precos">Conhecer o plano Místico</ButtonLink>
           )}
         </div>
         {user.subscriptionStatus === "past_due" && <p className="mt-3 text-sm text-amber-300">Não conseguimos cobrar seu cartão. Atualize o pagamento em “Gerenciar assinatura” para não perder o acesso.</p>}

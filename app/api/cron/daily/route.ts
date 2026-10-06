@@ -9,6 +9,7 @@ import { sendDailyEmail } from "@/lib/email";
 import { cleanupRateLimits } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
 import { unsubscribeUrl } from "@/lib/unsubscribe";
+import { isPaid } from "@/lib/plans";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -42,14 +43,31 @@ export async function GET(req: Request) {
   const users = await prisma.user.findMany({
     where: { dailyEmail: true, emailVerifiedAt: { not: null }, sunSign: { not: null }, OR: [{ lastDailyEmail: null }, { lastDailyEmail: { lt: startOfDay } }] },
     take: 500,
-    select: { id: true, name: true, email: true, sunSign: true },
+    select: { id: true, name: true, email: true, sunSign: true, plan: true, subscriptionStatus: true, currentPeriodEnd: true },
   });
+
+  // sonhos bloqueados (aguardando desbloqueio) dos destinatários: gatilho de compra no e-mail
+  const lockedRows = await prisma.dream.findMany({
+    where: { userId: { in: users.map((u) => u.id) }, interpretation: null },
+    orderBy: { createdAt: "desc" },
+    select: { id: true, userId: true },
+  });
+  const locked = new Map<string, { id: string; count: number }>();
+  for (const d of lockedRows) {
+    const cur = locked.get(d.userId);
+    locked.set(d.userId, { id: cur?.id ?? d.id, count: (cur?.count ?? 0) + 1 });
+  }
 
   let sent = 0;
   for (const u of users) {
     const sign = getSign(u.sunSign);
     if (!sign) continue;
-    const res = await sendDailyEmail(u.email, u.name, sign.name, horoscopes[sign.slug].general, moon, unsubscribeUrl(env.appUrl, u.id));
+    const l = locked.get(u.id);
+    const res = await sendDailyEmail(u.email, u.name, sign.name, horoscopes[sign.slug].general, moon, unsubscribeUrl(env.appUrl, u.id), {
+      paid: isPaid(u),
+      lockedCount: l?.count ?? 0,
+      lockedDreamId: l?.id,
+    });
     if (res.ok) {
       sent++;
       await prisma.user.update({ where: { id: u.id }, data: { lastDailyEmail: new Date() } });

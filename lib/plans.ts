@@ -1,6 +1,11 @@
 import type { Plan, UsageKind } from "@prisma/client";
 
-export type PlanLimits = Record<UsageKind, number> & { imagesPerDream: number; maxDreamsStored: number };
+export type PlanLimits = Record<UsageKind, number> & {
+  imagesPerDream: number;
+  maxDreamsStored: number;
+  /** carta do dia com mensagem personalizada por IA (no grátis: significado tradicional, custo zero) */
+  aiDailyCard: boolean;
+};
 
 export type PlanInfo = {
   id: Plan;
@@ -8,43 +13,59 @@ export type PlanInfo = {
   tagline: string;
   priceMonthly: number; // R$
   priceYearly: number; // R$
+  /** "lifetime": a cota grátis é uma degustação única, não renova; "month": renova todo dia 1º */
+  period: "lifetime" | "month";
   limits: PlanLimits;
   features: string[];
+  locked?: string[];
   highlight?: boolean;
 };
 
+/**
+ * Modelo paid-first:
+ * - Grátis = degustação única (1 sonho interpretado) + recursos de custo zero que trazem a pessoa de volta
+ *   para as ofertas (horóscopo geral, carta do dia tradicional, fase da Lua, cálculo do mapa).
+ * - Tudo que gera custo de IA é pago: assinatura única (Místico) ou consulta avulsa.
+ */
 export const PLANS: Record<Plan, PlanInfo> = {
   FREE: {
     id: "FREE",
     name: "Grátis",
-    tagline: "Conheça o portal",
+    tagline: "Experimente a Oniria",
     priceMonthly: 0,
     priceYearly: 0,
-    limits: { DREAM: 3, ASTRAL: 1, TAROT_THREE: 1, COMPATIBILITY: 2, NUMEROLOGY: 1, SOLAR_RETURN: 0, imagesPerDream: 1, maxDreamsStored: 30 },
-    features: ["3 interpretações de sonhos por mês", "1 imagem por sonho", "Mapa astral básico (1/mês)", "Carta do dia e horóscopo diário", "Diário com até 30 sonhos"],
+    period: "lifetime",
+    limits: { DREAM: 1, ASTRAL: 0, TAROT_THREE: 0, COMPATIBILITY: 0, NUMEROLOGY: 0, SOLAR_RETURN: 0, imagesPerDream: 1, maxDreamsStored: 10, aiDailyCard: false },
+    features: ["1 interpretação de sonho de boas-vindas", "Seus Sol, Lua e Ascendente calculados", "Horóscopo do dia e fase da Lua", "Carta do dia (significado tradicional)", "Diário com até 10 sonhos"],
+    locked: ["Interpretação dos próximos sonhos", "Leitura do mapa astral", "Tarot, compatibilidade e numerologia"],
   },
   MISTICO: {
     id: "MISTICO",
     name: "Místico",
-    tagline: "Para quem vive o místico",
-    priceMonthly: 19.9,
-    priceYearly: 179,
-    limits: { DREAM: 30, ASTRAL: 3, TAROT_THREE: 15, COMPATIBILITY: 15, NUMEROLOGY: 5, SOLAR_RETURN: 0, imagesPerDream: 2, maxDreamsStored: Infinity },
-    features: ["30 interpretações por mês", "2 imagens por sonho (cena + emoção)", "Mapa astral completo com leitura", "Tarot de 3 cartas (15/mês)", "Compatibilidade e numerologia", "Diário ilimitado"],
+    tagline: "Tudo da Oniria, todo mês",
+    priceMonthly: 29.9,
+    priceYearly: 239,
+    period: "month",
+    limits: { DREAM: 40, ASTRAL: 2, TAROT_THREE: 20, COMPATIBILITY: 10, NUMEROLOGY: 3, SOLAR_RETURN: 0, imagesPerDream: 2, maxDreamsStored: Infinity, aiDailyCard: true },
+    features: [
+      "Até 40 sonhos interpretados por mês, com 2 imagens",
+      "Leitura completa do mapa astral",
+      "Carta do dia com mensagem personalizada",
+      "Tarot de 3 cartas, compatibilidade e numerologia",
+      "Diário de sonhos ilimitado",
+      "30% de desconto nas consultas avulsas (ex.: Revolução Solar)",
+    ],
     highlight: true,
-  },
-  ORACULO: {
-    id: "ORACULO",
-    name: "Oráculo",
-    tagline: "Experiência sem limites",
-    priceMonthly: 39.9,
-    priceYearly: 359,
-    limits: { DREAM: 150, ASTRAL: 10, TAROT_THREE: 60, COMPATIBILITY: 60, NUMEROLOGY: 20, SOLAR_RETURN: 1, imagesPerDream: 2, maxDreamsStored: Infinity },
-    features: ["150 interpretações por mês (uso justo)", "Revolução Solar inclusa (1/mês)", "Todos os recursos do Místico", "Limites 4× maiores em tarot e compatibilidade", "Prioridade em novos recursos", "Suporte prioritário"],
   },
 };
 
-export const PAID_PLANS: Plan[] = ["MISTICO", "ORACULO"];
+/** Limites durante o teste grátis do plano (evita abuso de custo antes da 1ª cobrança). */
+export const TRIAL_LIMITS: Record<UsageKind, number> = { DREAM: 3, ASTRAL: 1, TAROT_THREE: 2, COMPATIBILITY: 1, NUMEROLOGY: 1, SOLAR_RETURN: 0 };
+
+export const PAID_PLANS: Plan[] = ["MISTICO"];
+
+/** Desconto de assinante em consultas avulsas. */
+export const SUBSCRIBER_DISCOUNT = 0.3;
 
 export const USAGE_LABEL: Record<UsageKind, string> = {
   DREAM: "interpretações de sonhos",
@@ -64,8 +85,10 @@ export const USAGE_LABEL_ONE: Record<UsageKind, string> = {
   SOLAR_RETURN: "revolução solar",
 };
 
+type BillingState = { plan: Plan; subscriptionStatus: string | null; currentPeriodEnd: Date | null };
+
 /** Plano efetivo: assinatura inativa/vencida volta para o grátis. */
-export function effectivePlan(user: { plan: Plan; subscriptionStatus: string | null; currentPeriodEnd: Date | null }): Plan {
+export function effectivePlan(user: BillingState): Plan {
   if (user.plan === "FREE") return "FREE";
   const active = user.subscriptionStatus === "active" || user.subscriptionStatus === "trialing" || user.subscriptionStatus === "past_due";
   if (!active) return "FREE";
@@ -74,8 +97,25 @@ export function effectivePlan(user: { plan: Plan; subscriptionStatus: string | n
   return user.plan;
 }
 
+export const isTrialing = (user: BillingState) => effectivePlan(user) !== "FREE" && user.subscriptionStatus === "trialing";
+
+/** Limite do recurso para o usuário (considera teste grátis). */
+export function limitFor(user: BillingState, kind: UsageKind): number {
+  if (isTrialing(user)) return TRIAL_LIMITS[kind];
+  return PLANS[effectivePlan(user)].limits[kind];
+}
+
 export function monthStart(now = new Date()): Date {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
 }
 
+/** Início da janela de contagem da cota: mês corrente (pagos) ou desde sempre (degustação grátis). */
+export function quotaWindowStart(user: BillingState): Date {
+  return PLANS[effectivePlan(user)].period === "lifetime" ? new Date(0) : monthStart();
+}
+
+export const isPaid = (user: BillingState) => effectivePlan(user) !== "FREE";
+
 export const formatBRL = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+export const yearlySavingsPct = (p: PlanInfo) => Math.round((1 - p.priceYearly / (p.priceMonthly * 12)) * 100);

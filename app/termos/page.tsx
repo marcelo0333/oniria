@@ -31,17 +31,19 @@ export default function Page() {
 
           <h2>4. Planos, pagamento e renovação</h2>
           <ul>
-            <li>Há um plano gratuito com limites mensais e planos pagos (Místico e Oráculo) em assinatura mensal ou anual.</li>
+            <li>Há um plano gratuito de degustação (com recursos limitados e uma interpretação de sonho de boas-vindas) e o plano pago Místico, em assinatura mensal ou anual.</li>
+            <li><strong>Teste grátis:</strong> quando oferecido, o teste do plano Místico exige cartão e vale uma vez por pessoa. Se você não cancelar antes do fim do teste, a assinatura começa e é cobrada automaticamente. Durante o teste os limites de uso são reduzidos.</li>
             <li>Os pagamentos são processados pela Stripe. Não armazenamos dados completos de cartão.</li>
             <li>A assinatura <strong>renova automaticamente</strong> ao fim de cada período até ser cancelada. Você pode cancelar a qualquer momento em <em>Assinatura → Gerenciar</em>; o acesso continua até o fim do período já pago.</li>
-            <li>Limites mensais de uso (interpretações, leituras etc.) renovam no primeiro dia de cada mês. “Ilimitado”, quando indicado, está sujeito a uso justo.</li>
+            <li>Limites mensais de uso do plano Místico (interpretações, leituras etc.) renovam no primeiro dia de cada mês. Os benefícios do plano gratuito não renovam.</li>
+            <li>O atendimento é feito por e-mail, em até 3 dias úteis. Assinatura, cancelamento, exportação e exclusão de dados são feitos diretamente no aplicativo.</li>
             <li>Preços podem ser reajustados mediante aviso prévio; o reajuste não afeta o período já pago.</li>
           </ul>
 
           <h3>4.1 Consultas avulsas</h3>
           <ul>
             <li>Consultas avulsas (ex.: Revolução Solar, leitura do mapa astral, pacotes de sonhos) são <strong>pagamentos únicos</strong>, por Pix ou cartão, sem renovação automática.</li>
-            <li>Cada compra gera créditos na sua conta, que <strong>não expiram</strong> enquanto a conta existir e são usados depois que a cota mensal do seu plano acabar.</li>
+            <li>Cada compra gera créditos na sua conta, que <strong>não expiram</strong> enquanto a conta existir e são usados depois que a cota do seu plano acabar. Assinantes do Místico têm desconto nas consultas avulsas.</li>
             <li>Créditos são pessoais, não transferíveis e não conversíveis em dinheiro. Se a geração falhar por erro nosso, o crédito é devolvido automaticamente.</li>
           </ul>
 

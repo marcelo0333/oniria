@@ -1,9 +1,10 @@
 import { Check } from "lucide-react";
-import { PRODUCTS, formatCents } from "@/lib/products";
+import { PRODUCTS, formatCents, priceFor } from "@/lib/products";
+import type { CurrentUser } from "@/lib/auth";
 import BuyButton from "./BuyButton";
 
 /** Vitrine de consultas avulsas (pagamento único). */
-export default function ProductGrid({ highlightId, compact = false }: { highlightId?: string; compact?: boolean }) {
+export default function ProductGrid({ highlightId, compact = false, user = null }: { highlightId?: string; compact?: boolean; user?: CurrentUser | null }) {
   const list = compact ? PRODUCTS.filter((p) => ["revolucao-solar", "mapa-astral", "sonhos-5"].includes(p.id)) : PRODUCTS;
   return (
     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -15,8 +16,12 @@ export default function ProductGrid({ highlightId, compact = false }: { highligh
             <p className="text-4xl" aria-hidden>{p.icon}</p>
             <h3 className="mt-3 text-xl font-semibold">{p.name}</h3>
             <p className="text-sm text-zinc-400">{p.short}</p>
-            <p className="mt-4 text-3xl font-bold text-zinc-50">{formatCents(p.amount)}</p>
-            <p className="text-xs text-zinc-500">pagamento único · Pix ou cartão</p>
+            {priceFor(p, user) < p.amount ? (
+              <p className="mt-4 text-3xl font-bold text-zinc-50">{formatCents(priceFor(p, user))} <span className="text-base font-normal text-zinc-500 line-through">{formatCents(p.amount)}</span></p>
+            ) : (
+              <p className="mt-4 text-3xl font-bold text-zinc-50">{formatCents(p.amount)}</p>
+            )}
+            <p className="text-xs text-zinc-500">pagamento único · Pix ou cartão{priceFor(p, user) < p.amount ? " · preço de assinante" : ""}</p>
             {!compact && <p className="mt-3 text-sm text-zinc-300">{p.description}</p>}
             <ul className="my-5 flex-1 space-y-1.5 text-sm text-zinc-300">
               {p.bullets.map((b) => <li key={b} className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />{b}</li>)}

@@ -27,8 +27,10 @@ export const env = {
   pollinationsKey: () => optional("POLLINATIONS_API_KEY"),
   stripeSecretKey: () => optional("STRIPE_SECRET_KEY"),
   stripeWebhookSecret: () => optional("STRIPE_WEBHOOK_SECRET"),
-  stripePrice: (plan: "MISTICO" | "ORACULO", interval: "month" | "year") =>
+  stripePrice: (plan: "MISTICO", interval: "month" | "year") =>
     optional(`STRIPE_PRICE_${plan}_${interval === "month" ? "MONTHLY" : "YEARLY"}`),
+  /** dias de teste grátis na 1ª assinatura (cartão obrigatório; 0 desliga) */
+  trialDays: () => Math.max(0, Math.min(30, Number(optional("STRIPE_TRIAL_DAYS") ?? 3) || 0)),
   resendApiKey: () => optional("RESEND_API_KEY"),
   emailFrom: () => optional("EMAIL_FROM") ?? "Oniria <no-reply@oniria.app>",
   supportEmail: () => optional("SUPPORT_EMAIL") ?? "suporte@oniria.app",

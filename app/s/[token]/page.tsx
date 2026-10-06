@@ -10,7 +10,8 @@ import { formatDateBR } from "@/lib/dates";
 
 async function getShared(token: string) {
   if (!/^[A-Za-z0-9_-]{8,32}$/.test(token)) return null;
-  return prisma.dream.findUnique({ where: { shareToken: token }, select: { title: true, interpretation: true, keySymbolism: true, warnings: true, luckNumbers: true, moonPhase: true, astroContext: true, imagePromptLiteral: true, imagePromptAbstract: true, createdAt: true } });
+  const d = await prisma.dream.findUnique({ where: { shareToken: token }, select: { title: true, interpretation: true, keySymbolism: true, warnings: true, luckNumbers: true, moonPhase: true, astroContext: true, imagePromptLiteral: true, imagePromptAbstract: true, createdAt: true } });
+  return d?.interpretation ? { ...d, interpretation: d.interpretation, keySymbolism: d.keySymbolism ?? "" } : null;
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ token: string }> }): Promise<Metadata> {

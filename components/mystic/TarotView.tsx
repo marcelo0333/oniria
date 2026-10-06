@@ -1,7 +1,7 @@
 import Card from "@/components/ui/Card";
 import type { TarotOutput } from "@/lib/services/readings";
 
-export default function TarotView({ output }: { output: TarotOutput }) {
+export default function TarotView({ output, lockedNote }: { output: TarotOutput; lockedNote?: React.ReactNode }) {
   const { cards, reading } = output;
   return (
     <div className="space-y-4 animate-fade-in">
@@ -19,6 +19,7 @@ export default function TarotView({ output }: { output: TarotOutput }) {
           );
         })}
       </div>
+      {!reading && lockedNote}
       {reading && (
         <Card>
           <p className="leading-relaxed text-zinc-300">{reading.overview}</p>

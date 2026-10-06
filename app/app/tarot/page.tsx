@@ -12,6 +12,10 @@ import ActionButton from "@/components/app/ActionButton";
 import UsageMeter from "@/components/app/UsageMeter";
 import { TarotThreeForm } from "@/components/app/ReadingForms";
 import { dailyTarotAction } from "@/actions/readings";
+import Paywall from "@/components/sections/Paywall";
+import { isPaid } from "@/lib/plans";
+import { MAJOR_ARCANA } from "@/lib/mystic/tarot";
+import { Lock } from "lucide-react";
 
 export const metadata: Metadata = { title: "Tarot" };
 
@@ -34,15 +38,31 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ r
 
       <section>
         <SectionTitle sub="Gratuita e estável: a mesma carta o dia inteiro.">Carta do dia · {formatDateBR(date, { dateStyle: "long" })}</SectionTitle>
-        {daily ? <TarotView output={daily.output as unknown as TarotOutput} /> : <ActionButton action={dailyTarotAction} pendingText="Embaralhando…">🃏 Revelar minha carta do dia</ActionButton>}
+        {daily ? (
+          <TarotView
+            output={daily.output as unknown as TarotOutput}
+            lockedNote={!isPaid(user) && <Link href="/precos" className="mx-auto flex max-w-md items-center justify-center gap-2 rounded-xl border border-purple-400/30 bg-purple-500/10 px-4 py-3 text-sm text-purple-100 hover:bg-purple-500/20"><Lock className="h-4 w-4" /> A mensagem personalizada desta carta é exclusiva do plano Místico</Link>}
+          />
+        ) : <ActionButton action={dailyTarotAction} pendingText="Embaralhando…">🃏 Revelar minha carta do dia</ActionButton>}
       </section>
 
       <section className="space-y-4">
         <SectionTitle sub="Passado, presente e futuro — com interpretação personalizada.">Tiragem de 3 cartas</SectionTitle>
-        <Card className="space-y-4">
-          <UsageMeter label={quota.label} used={quota.used} limit={quota.limit} credits={quota.credits} />
-          <TarotThreeForm />
-        </Card>
+        {quota.available > 0 ? (
+          <Card className="space-y-4">
+            {isPaid(user) && <UsageMeter label={quota.label} used={quota.used} limit={quota.limit} credits={quota.credits} />}
+            <TarotThreeForm />
+          </Card>
+        ) : (
+          <Paywall
+            user={user}
+            kind="TAROT_THREE"
+            next="/app/tarot"
+            title="Faça sua pergunta às cartas"
+            subtitle="Três Arcanos Maiores para o passado, o presente e o futuro, interpretados para a sua pergunta."
+            preview={<div className="grid grid-cols-3 gap-4">{MAJOR_ARCANA.slice(17, 20).map((c) => <div key={c.id} className="flex h-40 items-center justify-center rounded-xl border border-purple-400/40 bg-indigo-900/60 text-5xl">{c.symbol}</div>)}</div>}
+          />
+        )}
         {shown && <TarotView output={shown.output as unknown as TarotOutput} />}
         {history.length > 0 && (
           <div>

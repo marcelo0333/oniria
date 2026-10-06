@@ -4,29 +4,32 @@ import { prisma } from "./prisma";
 import { env } from "./env";
 import type { CurrentUser } from "./auth";
 import { ensureCustomer, getStripe } from "./stripe";
-import { PRODUCT_BY_ID, formatCents } from "./products";
+import { PRODUCT_BY_ID, formatCents, priceFor } from "./products";
+import { safeNext } from "./safe-next";
 import { logger } from "./logger";
 import { sendPurchaseEmail } from "./email";
 
 /** Cria a compra (PENDING) e a sessão de Checkout em modo pagamento único (cartão e, se ativo na conta, Pix). */
-export async function createOneTimeCheckoutUrl(user: CurrentUser, productId: string): Promise<string> {
+export async function createOneTimeCheckoutUrl(user: CurrentUser, productId: string, next?: string): Promise<string> {
   const product = PRODUCT_BY_ID[productId];
   if (!product) throw new Error(`Produto inválido: ${productId}`);
   const customer = await ensureCustomer(user);
+  const amount = priceFor(product, user); // assinante paga com desconto
   const purchase = await prisma.purchase.create({
-    data: { userId: user.id, productId: product.id, kind: product.kind, quantity: product.quantity, amount: product.amount },
+    data: { userId: user.id, productId: product.id, kind: product.kind, quantity: product.quantity, amount },
   });
+  const back = safeNext(next);
   const metadata = { purchaseId: purchase.id, userId: user.id, productId: product.id };
   const session = await getStripe().checkout.sessions.create({
     mode: "payment",
     customer,
     client_reference_id: user.id,
     locale: "pt-BR",
-    line_items: [{ quantity: 1, price_data: { currency: "brl", unit_amount: product.amount, product_data: { name: `Oniria — ${product.name}`, description: product.short } } }],
+    line_items: [{ quantity: 1, price_data: { currency: "brl", unit_amount: amount, product_data: { name: `Oniria — ${product.name}`, description: product.short } } }],
     metadata,
     payment_intent_data: { metadata, description: `Oniria — ${product.name}` },
     allow_promotion_codes: true,
-    success_url: `${env.appUrl}/app/consultas?status=success&session_id={CHECKOUT_SESSION_ID}`,
+    success_url: `${env.appUrl}/app/consultas?status=success&session_id={CHECKOUT_SESSION_ID}${back ? `&next=${encodeURIComponent(back)}` : ""}`,
     cancel_url: `${env.appUrl}/consultas?status=canceled`,
   });
   await prisma.purchase.update({ where: { id: purchase.id }, data: { stripeSessionId: session.id } });

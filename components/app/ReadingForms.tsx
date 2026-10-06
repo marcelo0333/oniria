@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ActionButton from "./ActionButton";
-import { SelectField, Input, Textarea } from "@/components/ui/Field";
+import { Textarea } from "@/components/ui/Field";
 import { compatibilityAction, numerologyAction, threeCardTarotAction } from "@/actions/readings";
-import { SIGNS } from "@/lib/mystic/signs";
+import { unlockDreamAction } from "@/actions/process-dream-action";
 
 export function TarotThreeForm() {
   const router = useRouter();
@@ -18,33 +18,31 @@ export function TarotThreeForm() {
   );
 }
 
-export function CompatForm({ defaultA }: { defaultA?: string }) {
+/** Gera a leitura completa (IA) de um par de signos já pré-visualizado. */
+export function CompatReadingButton({ a, b }: { a: string; b: string }) {
   const router = useRouter();
-  const [a, setA] = useState(defaultA ?? "aries");
-  const [b, setB] = useState("libra");
-  const opts = SIGNS.map((s) => <option key={s.slug} value={s.slug} className="bg-zinc-900">{s.glyph} {s.name}</option>);
   return (
-    <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <SelectField label="Signo 1" name="a" value={a} onChange={(e) => setA(e.target.value)}>{opts}</SelectField>
-        <SelectField label="Signo 2" name="b" value={b} onChange={(e) => setB(e.target.value)}>{opts}</SelectField>
-      </div>
-      <ActionButton action={() => compatibilityAction(a, b)} pendingText="Cruzando os signos…" onDone={(id) => router.push(`/app/compatibilidade?r=${id}`)}>💞 Analisar compatibilidade</ActionButton>
-    </div>
+    <ActionButton action={() => compatibilityAction(a, b)} pendingText="Cruzando os signos…" onDone={(id) => router.push(`/app/compatibilidade?a=${a}&b=${b}&r=${id}`)}>
+      💞 Ver a leitura completa do casal
+    </ActionButton>
   );
 }
 
-export function NumerologyForm({ defaultName, defaultDate }: { defaultName: string; defaultDate: string }) {
+/** Gera a leitura completa (IA) dos números já calculados. */
+export function NumerologyReadingButton({ name, date }: { name: string; date: string }) {
   const router = useRouter();
-  const [name, setName] = useState(defaultName);
-  const [date, setDate] = useState(defaultDate);
   return (
-    <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Input label="Nome completo (de nascimento)" name="fullName" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />
-        <Input label="Data de nascimento" name="birth" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-      </div>
-      <ActionButton action={() => numerologyAction(name, date)} disabled={!name.trim() || !date} pendingText="Calculando seus números…" onDone={(id) => router.push(`/app/numerologia?r=${id}`)}>🔢 Revelar meus números</ActionButton>
-    </div>
+    <ActionButton action={() => numerologyAction(name, date)} pendingText="Interpretando seus números…" onDone={(id) => router.push(`/app/numerologia?r=${id}`)}>
+      🔢 Ver a leitura completa
+    </ActionButton>
+  );
+}
+
+/** Desbloqueia (interpreta) um sonho salvo bloqueado usando a cota ou um crédito. */
+export function UnlockDreamButton({ dreamId }: { dreamId: string }) {
+  return (
+    <ActionButton action={() => unlockDreamAction(dreamId)} pendingText="Os astros leem o seu sonho…">
+      🔮 Interpretar este sonho
+    </ActionButton>
   );
 }

@@ -12,7 +12,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ n
   const next = safeNext((await searchParams).next) ?? undefined;
   if (await getCurrentUser()) redirect(next ?? "/app");
   return (
-    <AuthShell title="Crie sua conta grátis" subtitle="3 interpretações de sonhos por mês, sem cartão" footer={<>Já tem conta? <Link href={next ? `/entrar?next=${encodeURIComponent(next)}` : "/entrar"} className="text-purple-300 hover:underline">Entrar</Link></>}>
+    <AuthShell title="Crie sua conta grátis" subtitle="Seu primeiro sonho interpretado grátis, sem cartão" footer={<>Já tem conta? <Link href={next ? `/entrar?next=${encodeURIComponent(next)}` : "/entrar"} className="text-purple-300 hover:underline">Entrar</Link></>}>
       <SignUpForm next={next} />
     </AuthShell>
   );

@@ -48,7 +48,7 @@ export default async function Home() {
         name: "Oniria",
         applicationCategory: "LifestyleApplication",
         operatingSystem: "Web",
-        offers: [{ "@type": "Offer", price: "0", priceCurrency: "BRL", name: "Grátis" }, { "@type": "Offer", price: "19.90", priceCurrency: "BRL", name: "Místico" }, { "@type": "Offer", price: "39.90", priceCurrency: "BRL", name: "Oráculo" }],
+        offers: [{ "@type": "Offer", price: "0", priceCurrency: "BRL", name: "Grátis" }, { "@type": "Offer", price: "29.90", priceCurrency: "BRL", name: "Místico" }],
       },
     ],
   };
@@ -99,21 +99,21 @@ export default async function Home() {
       </section>
 
       <section className="mx-auto mt-24 max-w-6xl px-4" aria-labelledby="planos">
-        <h2 id="planos" className="mb-2 text-center text-3xl font-semibold">Comece grátis, evolua quando quiser</h2>
-        <p className="mb-10 text-center text-zinc-400">7 dias de garantia. Cancele em um clique.</p>
+        <h2 id="planos" className="mb-2 text-center text-3xl font-semibold">Seu primeiro sonho é por nossa conta</h2>
+        <p className="mb-10 text-center text-zinc-400">Depois, desbloqueie tudo com o plano Místico — teste grátis, cancele em um clique.</p>
         <Pricing user={user} />
       </section>
 
       <section className="mx-auto mt-24 max-w-6xl px-4" aria-labelledby="avulsas">
         <h2 id="avulsas" className="mb-2 text-center text-3xl font-semibold">Prefere sem assinatura?</h2>
         <p className="mb-10 text-center text-zinc-400">Consultas avulsas com pagamento único no Pix ou cartão. O crédito não expira.</p>
-        <ProductGrid compact />
+        <ProductGrid compact user={user} />
         <p className="mt-6 text-center"><Link href="/consultas" className="text-purple-300 hover:underline">Ver todas as consultas avulsas →</Link></p>
       </section>
 
       <section className="mx-auto mt-24 max-w-3xl px-4 text-center">
         <h2 className="text-3xl font-semibold">Seu próximo sonho merece ser entendido</h2>
-        <p className="mt-3 text-zinc-400">Crie sua conta em 30 segundos e interprete seu primeiro sonho agora.</p>
+        <p className="mt-3 text-zinc-400">Crie sua conta em 30 segundos e interprete seu primeiro sonho agora — sem cartão.</p>
         <div className="mt-6"><ButtonLink href={user ? "/app/sonhos/novo" : "/cadastro"} size="lg">✨ Começar agora</ButtonLink></div>
       </section>
     </SiteShell>

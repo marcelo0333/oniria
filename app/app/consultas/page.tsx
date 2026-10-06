@@ -8,6 +8,7 @@ import { billingEnabled } from "@/lib/stripe";
 import { PRODUCTS, PRODUCT_BY_ID, formatCents } from "@/lib/products";
 import { USAGE_LABEL } from "@/lib/plans";
 import { formatDateBR } from "@/lib/dates";
+import { safeNext } from "@/lib/safe-next";
 import Card, { Badge, SectionTitle } from "@/components/ui/Card";
 import ProductGrid from "@/components/sections/ProductGrid";
 import type { UsageKind } from "@prisma/client";
@@ -28,9 +29,10 @@ const STATUS: Record<string, { label: string; tone: "green" | "amber" | "zinc" |
   REFUNDED: { label: "reembolsado", tone: "purple" },
 };
 
-export default async function Page({ searchParams }: { searchParams: Promise<{ status?: string; session_id?: string }> }) {
+export default async function Page({ searchParams }: { searchParams: Promise<{ status?: string; session_id?: string; next?: string }> }) {
   const user = await requireUser();
-  const { status, session_id } = await searchParams;
+  const { status, session_id, next: rawNext } = await searchParams;
+  const next = safeNext(rawNext);
   const confirmation = status === "success" && session_id && billingEnabled() ? await confirmReturnedSession(user, session_id) : null;
   const [credits, purchases] = await Promise.all([
     creditBalances(user.id),
@@ -47,7 +49,10 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
       </header>
 
       {confirmation === "granted" || confirmation === "already" ? (
-        <p role="status" className="rounded-xl border border-emerald-400/30 bg-emerald-500/15 px-4 py-3 text-emerald-200">Pagamento confirmado! Seu crédito já está disponível ✨</p>
+        <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-400/30 bg-emerald-500/15 px-4 py-3 text-emerald-200">
+          <span>Pagamento confirmado! Seu crédito já está disponível ✨</span>
+          {next && <Link href={next} className="rounded-full bg-emerald-500 px-4 py-1.5 text-sm font-semibold text-black">Continuar de onde parei →</Link>}
+        </div>
       ) : status === "success" || hasRecentPending(purchases) ? (
         <p role="status" className="rounded-xl border border-amber-400/30 bg-amber-500/10 px-4 py-3 text-amber-100">Recebemos seu pedido. Se pagou com Pix, a confirmação chega em instantes — atualize esta página em alguns segundos.</p>
       ) : null}
@@ -70,7 +75,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
 
       <section>
         <SectionTitle sub="Pix ou cartão · pagamento único">Comprar consultas</SectionTitle>
-        <ProductGrid />
+        <ProductGrid user={user} />
       </section>
 
       {purchases.length > 0 && (
