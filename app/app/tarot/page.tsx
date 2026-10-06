@@ -50,7 +50,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ r
         <SectionTitle sub="Passado, presente e futuro — com interpretação personalizada.">Tiragem de 3 cartas</SectionTitle>
         {quota.available > 0 ? (
           <Card className="space-y-4">
-            {isPaid(user) && <UsageMeter label={quota.label} used={quota.used} limit={quota.limit} credits={quota.credits} />}
+            {isPaid(user) && <UsageMeter label={quota.label} used={quota.used} limit={quota.limit} credits={quota.credits} period={quota.period} />}
             <TarotThreeForm />
           </Card>
         ) : (

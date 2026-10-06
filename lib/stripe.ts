@@ -13,7 +13,13 @@ let stripe: Stripe | null = null;
 export function getStripe(): Stripe {
   const key = env.stripeSecretKey();
   if (!key) throw new Error("Pagamentos não configurados (STRIPE_SECRET_KEY).");
-  return (stripe ??= new Stripe(key));
+  if (stripe) return stripe;
+  // STRIPE_API_BASE só é usado em testes automatizados (servidor Stripe falso); em produção fica vazio.
+  const base = process.env.STRIPE_API_BASE ? new URL(process.env.STRIPE_API_BASE) : null;
+  stripe = base
+    ? new Stripe(key, { host: base.hostname, port: base.port, protocol: base.protocol.replace(":", "") as "http" | "https", maxNetworkRetries: 0 })
+    : new Stripe(key);
+  return stripe;
 }
 
 export const billingEnabled = () => !!env.stripeSecretKey();
@@ -100,6 +106,8 @@ export async function syncSubscription(sub: Stripe.Subscription) {
       plan: ended || !plan ? "FREE" : plan,
       currentPeriodEnd: item?.current_period_end ? new Date(item.current_period_end * 1000) : null,
       ...(sub.trial_end && !user.trialUsedAt ? { trialUsedAt: new Date() } : {}),
+      // 1ª cobrança paga (início da garantia de 7 dias): assinatura ativa pela primeira vez
+      ...(sub.status === "active" && !user.subscriptionPaidAt ? { subscriptionPaidAt: new Date() } : {}),
       cancelAtPeriodEnd: !ended && (sub.cancel_at_period_end || !!sub.cancel_at),
     },
   });

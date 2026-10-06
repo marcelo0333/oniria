@@ -38,9 +38,21 @@ export const env = {
   isProd: process.env.NODE_ENV === "production",
 };
 
+/** Documento do responsável: CPF (pessoa física) ou CNPJ. */
+function companyDocument() {
+  const raw = (process.env.COMPANY_DOCUMENT || process.env.COMPANY_CNPJ || "").trim();
+  if (!raw) return null;
+  const digits = raw.replace(/\D/g, "");
+  return { value: raw, label: digits.length === 11 ? "CPF" : "CNPJ" };
+}
+
 export const company = {
   name: () => process.env.COMPANY_NAME || "Oniria",
-  cnpj: () => process.env.COMPANY_CNPJ || "",
+  /** ex.: "CPF 000.000.000-00" ou "CNPJ 00.000.000/0001-00" (vazio se não configurado) */
+  document: () => {
+    const d = companyDocument();
+    return d ? `${d.label} ${d.value}` : "";
+  },
   address: () => process.env.COMPANY_ADDRESS || "",
   dpoEmail: () => process.env.DPO_EMAIL || process.env.SUPPORT_EMAIL || "privacidade@oniria.app",
 };

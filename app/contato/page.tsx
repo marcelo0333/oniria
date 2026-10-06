@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Suporte e contato", description: "Fa
 const FAQ = [
   ["Como cancelo minha assinatura?", "Em Meu painel → Assinatura → Gerenciar assinatura. O cancelamento vale ao fim do período já pago. No teste grátis, cancele antes do fim e nada é cobrado."],
   ["Comprei uma consulta e não apareceu.", "Pagamentos por Pix podem levar alguns instantes. Abra Minhas consultas e atualize a página; o crédito aparece assim que o pagamento é confirmado."],
-  ["Posso pedir reembolso?", "Sim, em até 7 dias após a primeira compra (CDC, art. 49). Escreva para o e-mail de suporte com o e-mail da sua conta."],
+  ["Posso pedir reembolso?", "Sim, em até 7 dias (CDC, art. 49), direto no app: assinatura em Assinatura → Cancelar e receber reembolso; consultas avulsas não usadas em Minhas consultas → Pedir reembolso."],
   ["Como excluo meus dados?", "Em Perfil → Zona de perigo você exporta uma cópia e exclui a conta definitivamente."],
   ["A interpretação é uma previsão?", "Não. É um conteúdo de entretenimento e autoconhecimento, que combina simbolismo, psicologia e astrologia."],
   ["Esqueci minha senha.", "Use “Esqueci minha senha” na tela de login; enviaremos um link válido por 1 hora."],

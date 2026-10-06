@@ -11,10 +11,10 @@ export default function Page() {
     <SiteShell stars={false}>
       <PageContainer narrow>
         <Prose title="Política de Privacidade" updated="06/10/2026">
-          <p>Esta política explica como a <strong>{company.name()}</strong> (“Oniria”) trata dados pessoais, em conformidade com a Lei Geral de Proteção de Dados (LGPD – Lei 13.709/2018).</p>
+          <p>Esta política explica como <strong>{company.name()}</strong>, responsável pela Oniria, trata dados pessoais, em conformidade com a Lei Geral de Proteção de Dados (LGPD – Lei 13.709/2018).</p>
 
           <h2>1. Controlador e contato (DPO)</h2>
-          <p>Controladora: {company.name()}{company.cnpj() ? <>, CNPJ {company.cnpj()}</> : null}. Encarregado/contato de privacidade: <a href={`mailto:${dpo}`}>{dpo}</a>.</p>
+          <p>Controlador(a): {company.name()}{company.document() ? <>, {company.document()}</> : null}. Contato de privacidade (encarregado): <a href={`mailto:${dpo}`}>{dpo}</a>.</p>
 
           <h2>2. Dados que coletamos</h2>
           <ul>

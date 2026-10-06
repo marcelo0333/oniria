@@ -79,6 +79,13 @@ Legenda: `[x]` concluído · `[ ]` pendente. Cada fase = 1+ commits na branch `c
 - [x] T8.21 Remoção de promessas de suporte (sem equipe): autoatendimento + e-mail em até 3 dias úteis
 - [x] T8.22 Análise financeira por cenários (`FINANCEIRO.md`)
 
+## Fase 8.3 — Operação solo com CPF
+- [x] T8.23 Termos/Privacidade aceitam CPF ou CNPJ (`COMPANY_DOCUMENT`) e endereço opcional
+- [x] T8.24 Reembolso self-service: consulta avulsa não usada (7 dias) e garantia de 7 dias da 1ª cobrança da assinatura (cancela e reembolsa)
+- [x] T8.25 Agendador diário gratuito via GitHub Actions (para hospedagem fora do Vercel)
+- [x] T8.26 Guia `OPERACAO_SOLO.md`: CPF/carnê-leão, quando abrir CNPJ, hospedagem enxuta, rotina e respostas prontas
+- [x] T8.27 E2E de pagamentos com Stripe falso: compra → retorno → desbloqueio → reembolso → garantia
+
 ## Fase 9 — Go-live (checklist fora do código, ver `GO_LIVE.md`) — depende de você: empresa, contas e chaves
 - [ ] T9.1 Empresa/CNPJ, conta bancária PJ, Stripe ativado
 - [ ] T9.2 Domínio, DNS, e-mail remetente (SPF/DKIM/DMARC)

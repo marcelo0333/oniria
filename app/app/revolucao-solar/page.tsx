@@ -73,7 +73,7 @@ export default async function Page() {
         quota.available > 0 ? (
           <Card className="space-y-4">
             <p className="text-zinc-300">{product.description}</p>
-            <UsageMeter label={quota.label} used={quota.used} limit={quota.limit} credits={quota.credits} />
+            <UsageMeter label={quota.label} used={quota.used} limit={quota.limit} credits={quota.credits} period={quota.period} />
             <ActionButton action={solarReturnAction} pendingText="Calculando seu ano… (até 40s)">☀️ Gerar minha Revolução Solar</ActionButton>
           </Card>
         ) : (

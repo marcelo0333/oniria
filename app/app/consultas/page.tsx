@@ -9,6 +9,8 @@ import { PRODUCTS, PRODUCT_BY_ID, formatCents } from "@/lib/products";
 import { USAGE_LABEL } from "@/lib/plans";
 import { formatDateBR } from "@/lib/dates";
 import { safeNext } from "@/lib/safe-next";
+import { purchaseRefundable, refundDeadline } from "@/lib/refunds";
+import RefundButton from "@/components/app/RefundButton";
 import Card, { Badge, SectionTitle } from "@/components/ui/Card";
 import ProductGrid from "@/components/sections/ProductGrid";
 import type { UsageKind } from "@prisma/client";
@@ -29,9 +31,9 @@ const STATUS: Record<string, { label: string; tone: "green" | "amber" | "zinc" |
   REFUNDED: { label: "reembolsado", tone: "purple" },
 };
 
-export default async function Page({ searchParams }: { searchParams: Promise<{ status?: string; session_id?: string; next?: string }> }) {
+export default async function Page({ searchParams }: { searchParams: Promise<{ status?: string; session_id?: string; next?: string; reembolso?: string }> }) {
   const user = await requireUser();
-  const { status, session_id, next: rawNext } = await searchParams;
+  const { status, session_id, next: rawNext, reembolso } = await searchParams;
   const next = safeNext(rawNext);
   const confirmation = status === "success" && session_id && billingEnabled() ? await confirmReturnedSession(user, session_id) : null;
   const [credits, purchases] = await Promise.all([
@@ -47,6 +49,12 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
         <h1 className="text-3xl font-semibold">Minhas consultas</h1>
         <p className="mt-1 text-zinc-400">Créditos de consultas avulsas: não expiram e somam com o seu plano.</p>
       </header>
+
+{reembolso && (
+        <p role="status" className="rounded-xl border border-emerald-400/30 bg-emerald-500/15 px-4 py-3 text-emerald-200">
+          {reembolso === "guarantee" ? "Assinatura cancelada e reembolso integral solicitado ✔" : "Reembolso solicitado ✔"} O valor volta pelo mesmo meio de pagamento (Pix: em instantes; cartão: em até 2 faturas).
+        </p>
+      )}
 
       {confirmation === "granted" || confirmation === "already" ? (
         <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-400/30 bg-emerald-500/15 px-4 py-3 text-emerald-200">
@@ -89,11 +97,19 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
                   <span className="text-zinc-500">{formatDateBR(p.createdAt, { dateStyle: "medium", timeStyle: "short" })}</span>
                   <span className="text-zinc-300">{formatCents(p.amount)}</span>
                   <Badge tone={STATUS[p.status].tone}>{STATUS[p.status].label}</Badge>
+                  {p.paidAt && purchaseRefundable(p, credits[p.kind] ?? 0) && (
+                    <RefundButton
+                      kind="purchase"
+                      purchaseId={p.id}
+                      label={`Pedir reembolso (até ${formatDateBR(refundDeadline(p.paidAt), { dateStyle: "short" })})`}
+                      confirmText={`Reembolsar ${PRODUCT_BY_ID[p.productId]?.name ?? "esta compra"} (${formatCents(p.amount)})? ${p.quantity > 1 ? `Os ${p.quantity} créditos` : "O crédito"} desta compra será(ão) removido(s).`}
+                    />
+                  )}
                 </li>
               ))}
             </ul>
           </Card>
-          <p className="mt-2 text-xs text-zinc-500">Reembolso em até 7 dias para consultas não utilizadas: <Link href="/contato" className="underline">fale com o suporte</Link>.</p>
+          <p className="mt-2 text-xs text-zinc-500">Consultas não utilizadas podem ser reembolsadas aqui mesmo em até 7 dias após a compra. Pacotes: o reembolso pelo app vale enquanto nenhum crédito do pacote tiver sido usado.</p>
         </section>
       )}
     </div>

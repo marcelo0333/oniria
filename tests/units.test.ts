@@ -115,3 +115,23 @@ describe("descadastro de e-mail", async () => {
     expect(verifyUnsubscribe("user-1", "x")).toBe(false);
   });
 });
+
+describe("reembolso self-service", async () => {
+  const { purchaseRefundable, guaranteeEligible, REFUND_WINDOW_MS } = await import("@/lib/refunds");
+  const now = Date.now();
+  const paid = { status: "PAID" as const, paidAt: new Date(now - 86400e3), stripePaymentIntentId: "pi_1", quantity: 5 };
+  it("consulta: só PAID, dentro de 7 dias e com todos os créditos da compra ainda disponíveis", () => {
+    expect(purchaseRefundable(paid, 5, now)).toBe(true);
+    expect(purchaseRefundable(paid, 4, now)).toBe(false); // pacote parcialmente usado
+    expect(purchaseRefundable({ ...paid, paidAt: new Date(now - REFUND_WINDOW_MS - 1000) }, 5, now)).toBe(false);
+    expect(purchaseRefundable({ ...paid, status: "REFUNDED" }, 5, now)).toBe(false);
+    expect(purchaseRefundable({ ...paid, stripePaymentIntentId: null }, 5, now)).toBe(false);
+  });
+  it("garantia: assinatura ativa, 1ª cobrança há até 7 dias, uma vez por pessoa", () => {
+    const u = { plan: "MISTICO", subscriptionStatus: "active", currentPeriodEnd: new Date(now + 20 * 86400e3), stripeSubscriptionId: "sub_1", stripeCustomerId: "cus_1", guaranteeUsedAt: null, subscriptionPaidAt: new Date(now - 2 * 86400e3) } as unknown as Parameters<typeof guaranteeEligible>[0];
+    expect(guaranteeEligible(u, now)).toBe(true);
+    expect(guaranteeEligible({ ...u, guaranteeUsedAt: new Date() }, now)).toBe(false);
+    expect(guaranteeEligible({ ...u, subscriptionPaidAt: new Date(now - 8 * 86400e3) }, now)).toBe(false);
+    expect(guaranteeEligible({ ...u, subscriptionStatus: "trialing" }, now)).toBe(false); // no teste ainda não houve cobrança
+  });
+});

@@ -21,7 +21,7 @@ export default async function Page() {
         <p className="mt-1 text-zinc-400">Quanto mais detalhes, mais rica a interpretação. Hoje a Lua está {moon.phaseName.toLowerCase()} em {moon.signName} {moon.emoji}</p>
       </header>
       {isPaid(user) ? (
-        <UsageMeter label={dream.label} used={dream.used} limit={dream.limit} credits={dream.credits} />
+        <UsageMeter label={dream.label} used={dream.used} limit={dream.limit} credits={dream.credits} period={dream.period} />
       ) : dream.available > 0 ? (
         <p className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">✨ {dream.credits > 0 ? `Você tem ${dream.available} interpretação(ões) disponível(is).` : "Sua primeira interpretação é por nossa conta."}</p>
       ) : (

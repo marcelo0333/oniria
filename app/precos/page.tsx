@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 const FAQ = [
   ["Como funciona o teste grátis?", "Você cadastra o cartão e usa o plano Místico sem pagar nada durante o período de teste. Se cancelar antes do fim, não é cobrado. O teste vale uma vez por pessoa."],
   ["Posso cancelar quando quiser?", "Sim. O cancelamento é feito em um clique no portal de assinatura e o acesso segue até o fim do período pago."],
-  ["Existe garantia?", "Sim: 7 dias de garantia incondicional na primeira compra. Se não gostar, devolvemos o valor."],
+  ["Existe garantia?", "Sim: 7 dias após a 1ª cobrança. Se não gostar, cancele e receba o reembolso integral com um clique, direto no app."],
   ["Quais formas de pagamento?", "Assinaturas: cartão de crédito. Consultas avulsas: Pix ou cartão. Tudo processado com segurança pela Stripe — não guardamos dados do seu cartão."],
   ["E se eu não quiser assinar?", "Sem problema: compre só a consulta que quiser (sonho, mapa astral, Revolução Solar…) com pagamento único no Pix ou cartão."],
   ["O que acontece quando o limite do mês acaba?", "Os limites renovam todo dia 1º. Se precisar de mais antes disso, use uma consulta avulsa — assinantes pagam 30% menos. Nada é cobrado automaticamente a mais."],

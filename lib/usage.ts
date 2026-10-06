@@ -28,7 +28,7 @@ export async function creditBalances(userId: string): Promise<Partial<Record<Usa
   return Object.fromEntries(rows.map((r) => [r.kind, r.balance]));
 }
 
-export type UsageRow = { kind: UsageKind; label: string; used: number; limit: number; credits: number; available: number };
+export type UsageRow = { kind: UsageKind; label: string; used: number; limit: number; credits: number; available: number; period: "lifetime" | "month" };
 
 export async function usageSummary(user: CurrentUser): Promise<UsageRow[]> {
   const [grouped, credits] = await Promise.all([
@@ -40,7 +40,7 @@ export async function usageSummary(user: CurrentUser): Promise<UsageRow[]> {
     const u = used[kind] ?? 0;
     const c = credits[kind] ?? 0;
     const limit = limitFor(user, kind);
-    return { kind, label: USAGE_LABEL[kind], used: u, limit, credits: c, available: Math.max(0, limit - u) + c };
+    return { kind, label: USAGE_LABEL[kind], used: u, limit, credits: c, available: Math.max(0, limit - u) + c, period: PLANS[effectivePlan(user)].period };
   });
 }
 

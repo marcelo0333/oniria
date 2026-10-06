@@ -1,5 +1,7 @@
 # Oniria — Roteiro para colocar em produção e começar a vender
 
+> **Vai começar sozinho e com CPF, como renda extra?** Siga primeiro [`OPERACAO_SOLO.md`](./OPERACAO_SOLO.md): ele substitui as seções 1, 2, 4 e 6 deste roteiro por uma versão enxuta (CPF + carnê-leão + hospedagem de ~R$ 40–90/mês). As demais seções (Stripe, chaves, e-mail, testes) continuam valendo.
+
 > O **código está pronto para venda** (ver `TAREFAS.md`). O que falta é a parte **fora do código**:
 > empresa, conta bancária, Stripe, domínio, hospedagem, chaves de API e revisões legais.
 > Siga na ordem. Estimativa realista: **5 a 15 dias úteis** (o gargalo costuma ser CNPJ/Stripe/abertura de conta).
@@ -35,7 +37,7 @@ Legenda: 🧾 financeiro/legal · 🌐 infra · 🔑 contas/chaves · ✅ valida
 2. **Contador** (online: Contabilizei, Conube, Agilize, etc.): apuração mensal (DAS), emissão de notas, pró-labore.
 3. **Inscrição municipal** e **certificado digital** (e-CNPJ A1) se o município exigir para NFS-e.
 4. **Marca**: pesquise e registre **ONIRIA** no INPI (classes 42 – software/SaaS, 41 – entretenimento e 45 – serviços de astrologia/horóscopo). Verifique colisões antes de investir em branding.
-5. Preencha as variáveis `COMPANY_NAME`, `COMPANY_CNPJ`, `COMPANY_ADDRESS`, `DPO_EMAIL` (aparecem nos Termos e na Política de Privacidade).
+5. Preencha as variáveis `COMPANY_NAME`, `COMPANY_DOCUMENT` (CPF ou CNPJ), `COMPANY_ADDRESS`, `DPO_EMAIL` (aparecem nos Termos e na Política de Privacidade).
 
 ## 2. 🧾 Conta bancária PJ
 - Abra uma conta PJ em nome do CNPJ (Inter, Nubank PJ, Itaú, Santander, C6 etc.). É nela que o Stripe fará os repasses (payouts) em BRL.
@@ -136,7 +138,7 @@ GOOGLE_GENAI_API_KEY    POLLINATIONS_API_KEY     GEMINI_MODEL (opcional)
 STRIPE_SECRET_KEY       STRIPE_WEBHOOK_SECRET
 STRIPE_PRICE_MISTICO_MONTHLY / _YEARLY    STRIPE_TRIAL_DAYS (padrão 3)
 RESEND_API_KEY          EMAIL_FROM               SUPPORT_EMAIL
-CRON_SECRET             COMPANY_NAME / COMPANY_CNPJ / COMPANY_ADDRESS / DPO_EMAIL
+CRON_SECRET             COMPANY_NAME / COMPANY_DOCUMENT (CPF ou CNPJ) / COMPANY_ADDRESS / DPO_EMAIL
 ```
 
 Depois de tudo isso: ✅ domínio no ar, ✅ Stripe live, ✅ compra real testada, ✅ NF emitida, ✅ jurídico revisado → **pode vender.**

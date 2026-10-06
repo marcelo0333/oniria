@@ -62,7 +62,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ r
           </div>
           {!out && (quota.available > 0 ? (
             <Card className="space-y-3">
-              {isPaid(user) && <UsageMeter label={quota.label} used={quota.used} limit={quota.limit} credits={quota.credits} />}
+              {isPaid(user) && <UsageMeter label={quota.label} used={quota.used} limit={quota.limit} credits={quota.credits} period={quota.period} />}
               <NumerologyReadingButton name={name} date={date} />
             </Card>
           ) : (

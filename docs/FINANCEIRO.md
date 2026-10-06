@@ -24,7 +24,7 @@
 ### Taxas e impostos
 - Cartão (Stripe Brasil): 3,99% + R$ 0,39 · Stripe Billing: 0,7% · Pix: ~1,5% (conservador).
 - Simples Nacional **Anexo III: 6%** (exige Fator R ≥ 28%, via pró-labore). No Anexo V (15,5%) a margem cai ~12%.
-- Custos fixos: de R$ 600/mês (início) a R$ 4.500/mês (escala), cobrindo hospedagem, banco, e-mail, domínio e contador.
+- Custos fixos: de R$ 600/mês (início) a R$ 4.500/mês (escala), cobrindo hospedagem, banco, e-mail, domínio e contador. **Operando sozinho com CPF e hospedagem enxuta, o começo cai para ~R$ 60–150/mês** (ver [`OPERACAO_SOLO.md`](./OPERACAO_SOLO.md)).
 
 ## 2. Economia unitária
 

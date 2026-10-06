@@ -6,6 +6,7 @@ SaaS em português para o nicho místico: **interpretação de sonhos com IA** (
 - Análise financeira e cenários: [`docs/FINANCEIRO.md`](docs/FINANCEIRO.md)
 - Tarefas de desenvolvimento: [`docs/TAREFAS.md`](docs/TAREFAS.md)
 - **Como colocar em produção e vender:** [`docs/GO_LIVE.md`](docs/GO_LIVE.md)
+- **Operar sozinho, com CPF, como renda extra:** [`docs/OPERACAO_SOLO.md`](docs/OPERACAO_SOLO.md)
 
 ## Stack
 Next.js 16 (App Router) · React 19 · Tailwind 4 · PostgreSQL + Prisma 7 · Gemini (texto) · Pollinations (imagem) · `astronomy-engine` (astro) · Stripe · Resend · Vitest · Playwright.
@@ -27,7 +28,7 @@ Para testar pagamentos: `stripe listen --forward-to localhost:3000/api/stripe/we
 | `npm run dev` / `build` / `start` | Next.js |
 | `npm run lint` / `typecheck` | ESLint / TypeScript |
 | `npm test` | Vitest (unitários + integração com Postgres se `DATABASE_URL` existir) |
-| `bash tests/e2e/run.sh` | Smoke e2e (Chromium + Gemini falso + webhook Stripe assinado). Requer `npm run build` antes |
+| `bash tests/e2e/run.sh` | E2E: funil grátis/pago, contas, webhooks, compra avulsa e reembolsos (Chromium + Gemini e Stripe falsos). Requer `npm run build` antes |
 | `npm run db:migrate` | `prisma migrate deploy` (produção) |
 | `node scripts/stripe-setup.mjs` | Cria produtos/preços/portal/webhook no Stripe |
 

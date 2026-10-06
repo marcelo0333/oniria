@@ -64,7 +64,7 @@ export default async function Page() {
         ) : null}
         {astral.available > 0 ? (
           <div className="space-y-3">
-            {isPaid(user) && <UsageMeter label={astral.label} used={astral.used} limit={astral.limit} credits={astral.credits} />}
+            {isPaid(user) && <UsageMeter label={astral.label} used={astral.used} limit={astral.limit} credits={astral.credits} period={astral.period} />}
             <ActionButton action={astralAction} pendingText="Lendo os astros… (até 30s)">{reading ? "Gerar nova leitura" : "✨ Gerar minha leitura"}</ActionButton>
           </div>
         ) : !reading ? (

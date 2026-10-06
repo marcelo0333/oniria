@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Termos de Uso", description: "Termos
 
 export default function Page() {
   const name = company.name();
-  const cnpj = company.cnpj();
+  const doc = company.document();
   return (
     <SiteShell stars={false}>
       <PageContainer narrow>
@@ -15,7 +15,7 @@ export default function Page() {
           <p>Bem-vindo(a) à Oniria. Ao criar uma conta ou usar o serviço, você concorda com estes Termos. Se não concordar, não utilize a plataforma.</p>
 
           <h2>1. Quem somos</h2>
-          <p>A Oniria é operada por <strong>{name}</strong>{cnpj ? <>, CNPJ {cnpj}</> : null}{company.address() ? <>, {company.address()}</> : null}. Contato: <a href={`mailto:${env.supportEmail()}`}>{env.supportEmail()}</a>.</p>
+          <p>A Oniria é operada por <strong>{name}</strong>{doc ? <>, {doc}</> : null}{company.address() ? <>, com endereço em {company.address()}</> : null}. Contato: <a href={`mailto:${env.supportEmail()}`}>{env.supportEmail()}</a>.</p>
 
           <h2>2. O que oferecemos</h2>
           <p>Ferramentas de interpretação de sonhos, mapa astral, tarot, numerologia, compatibilidade e horóscopo, geradas com apoio de inteligência artificial e cálculos astronômicos.</p>
@@ -48,7 +48,12 @@ export default function Page() {
           </ul>
 
           <h2>5. Arrependimento e reembolso</h2>
-          <p>Em contratações online, você pode desistir em até <strong>7 dias</strong> corridos após a primeira compra (art. 49 do Código de Defesa do Consumidor), com reembolso integral. Solicite por e-mail em <a href={`mailto:${env.supportEmail()}`}>{env.supportEmail()}</a>. Para consultas avulsas, o reembolso em 7 dias se aplica aos créditos ainda <strong>não utilizados</strong>, já que o conteúdo digital é entregue imediatamente ao ser usado (ao reembolsar, os créditos restantes são removidos). Após esse prazo, o cancelamento interrompe renovações futuras, sem reembolso proporcional do período em curso, salvo obrigação legal.</p>
+          <p>Em contratações online, você pode desistir em até <strong>7 dias</strong> corridos (art. 49 do Código de Defesa do Consumidor), com reembolso integral, <strong>diretamente no aplicativo</strong>:</p>
+          <ul>
+            <li><strong>Assinatura:</strong> em <em>Assinatura → Cancelar e receber reembolso</em>, em até 7 dias após a 1ª cobrança (uma vez por pessoa). A assinatura é encerrada na hora.</li>
+            <li><strong>Consultas avulsas:</strong> em <em>Minhas consultas → Pedir reembolso</em>, em até 7 dias após a compra, enquanto a consulta não tiver sido utilizada.</li>
+          </ul>
+          <p>Se não conseguir pelo aplicativo, escreva para <a href={`mailto:${env.supportEmail()}`}>{env.supportEmail()}</a>. Para consultas avulsas, o reembolso em 7 dias se aplica aos créditos ainda <strong>não utilizados</strong>, já que o conteúdo digital é entregue imediatamente ao ser usado (ao reembolsar, os créditos restantes são removidos). Após esse prazo, o cancelamento interrompe renovações futuras, sem reembolso proporcional do período em curso, salvo obrigação legal.</p>
 
           <h2>6. Uso aceitável</h2>
           <p>É proibido: usar a plataforma para fins ilícitos; tentar burlar limites, fraudar pagamentos ou acessar contas de terceiros; automatizar o acesso (bots/scraping) sem autorização; inserir conteúdo que viole direitos de terceiros ou seja ilegal, ofensivo ou envolva menores de forma imprópria; tentar manipular a IA para gerar conteúdo proibido.</p>

@@ -53,7 +53,7 @@ export default async function Dashboard() {
         {paid ? (
           <Card>
             <SectionTitle sub={isTrialing(user) ? "Teste grátis · limites ampliam após a 1ª cobrança" : `Plano ${PLANS[plan].name} · renova todo mês`}>Seu uso este mês</SectionTitle>
-            <div className="space-y-3">{usage.filter((u) => u.limit > 0).slice(0, 3).map((u) => <UsageMeter key={u.kind} label={u.label} used={u.used} limit={u.limit} credits={u.credits} />)}</div>
+            <div className="space-y-3">{usage.filter((u) => u.limit > 0).slice(0, 3).map((u) => <UsageMeter key={u.kind} label={u.label} used={u.used} limit={u.limit} credits={u.credits} period={u.period} />)}</div>
           </Card>
         ) : (
           <Card>

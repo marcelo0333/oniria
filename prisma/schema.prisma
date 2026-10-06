@@ -81,6 +81,8 @@ model User {
   currentPeriodEnd     DateTime?
   cancelAtPeriodEnd    Boolean   @default(false)
   trialUsedAt          DateTime? // teste grátis do plano já usado (1 por pessoa)
+  subscriptionPaidAt   DateTime? // 1ª cobrança paga da assinatura (início da garantia de 7 dias)
+  guaranteeUsedAt      DateTime? // garantia de 7 dias já usada (1 por pessoa)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
