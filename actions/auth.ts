@@ -11,6 +11,7 @@ import { rateLimit } from "@/lib/rate-limit";
 import { consumeToken, issueToken } from "@/lib/tokens";
 import { sendPasswordResetEmail, sendVerificationEmail } from "@/lib/email";
 import { logger } from "@/lib/logger";
+import { safeNext } from "@/lib/safe-next";
 
 async function ip() {
   const h = await headers();
@@ -47,7 +48,7 @@ export async function signup(_: FormState, formData: FormData): Promise<FormStat
     return { message: "Não foi possível criar sua conta agora. Tente novamente.", fields };
   }
   logger.info("Novo cadastro", { userId });
-  redirect("/app/perfil?welcome=1");
+  redirect(safeNext(raw.next) ?? "/app/perfil?welcome=1");
 }
 
 export async function signin(_: FormState, formData: FormData): Promise<FormState> {
@@ -65,7 +66,7 @@ export async function signin(_: FormState, formData: FormData): Promise<FormStat
   if (!user || !match) return { message: "E-mail ou senha inválidos.", fields };
 
   await createSession({ userId: user.id, email: user.email, name: user.name, v: user.tokenVersion });
-  redirect("/app");
+  redirect(safeNext(raw.next) ?? "/app");
 }
 
 export async function requestPasswordReset(_: FormState, formData: FormData): Promise<FormState> {

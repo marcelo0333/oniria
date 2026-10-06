@@ -40,7 +40,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ r
       <section className="space-y-4">
         <SectionTitle sub="Passado, presente e futuro — com interpretação personalizada.">Tiragem de 3 cartas</SectionTitle>
         <Card className="space-y-4">
-          <UsageMeter label={quota.label} used={quota.used} limit={quota.limit} />
+          <UsageMeter label={quota.label} used={quota.used} limit={quota.limit} credits={quota.credits} />
           <TarotThreeForm />
         </Card>
         {shown && <TarotView output={shown.output as unknown as TarotOutput} />}

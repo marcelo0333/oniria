@@ -32,7 +32,7 @@ export function planFromPriceId(priceId: string | undefined | null): PaidPlan | 
   return null;
 }
 
-async function ensureCustomer(user: CurrentUser): Promise<string> {
+export async function ensureCustomer(user: CurrentUser): Promise<string> {
   if (user.stripeCustomerId) return user.stripeCustomerId;
   const customer = await getStripe().customers.create({ email: user.email, name: user.name, metadata: { userId: user.id } });
   await prisma.user.update({ where: { id: user.id }, data: { stripeCustomerId: customer.id } });
@@ -88,6 +88,7 @@ export async function syncSubscription(sub: Stripe.Subscription) {
       subscriptionStatus: sub.status,
       plan: ended || !plan ? "FREE" : plan,
       currentPeriodEnd: item?.current_period_end ? new Date(item.current_period_end * 1000) : null,
+      cancelAtPeriodEnd: !ended && (sub.cancel_at_period_end || !!sub.cancel_at),
     },
   });
   if (!ended && plan && ["active", "trialing"].includes(sub.status) && !wasPaid) {

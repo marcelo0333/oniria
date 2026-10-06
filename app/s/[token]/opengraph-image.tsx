@@ -11,9 +11,9 @@ export default async function Image({ params }: { params: Promise<{ token: strin
   return new ImageResponse(
     (
       <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", padding: 72, background: "linear-gradient(135deg,#05010d 0%,#1b0f45 60%,#3b1d7a 100%)", color: "#fff" }}>
-        <div style={{ display: "flex", fontSize: 34, letterSpacing: 10, color: "#c4b5fd" }}>✦ ONIRIA</div>
+        <div style={{ display: "flex", fontSize: 34, letterSpacing: 10, color: "#c4b5fd" }}>ONIRIA</div>
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ display: "flex", fontSize: 28, color: "#a1a1aa", marginBottom: 16 }}>{dream?.moonPhase ? `🌙 ${dream.moonPhase}` : "Meu sonho"}</div>
+          <div style={{ display: "flex", fontSize: 28, color: "#a1a1aa", marginBottom: 16 }}>{dream?.moonPhase ? `Sonhado em ${dream.moonPhase}` : "Meu sonho"}</div>
           <div style={{ display: "flex", fontSize: 76, fontWeight: 700, lineHeight: 1.1 }}>{dream?.title ?? "Sonho interpretado"}</div>
         </div>
         <div style={{ display: "flex", fontSize: 28, color: "#d4d4d8" }}>Interprete o seu sonho em oniria — sonhos, astros e destino</div>

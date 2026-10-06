@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Cria (idempotente) produtos, preços, portal do cliente e webhook no Stripe e imprime as variáveis de ambiente.
+// Cria (idempotente) produtos, preços de assinatura, portal do cliente e webhook no Stripe e imprime as variáveis de ambiente.
+// Consultas avulsas não precisam de preços no Stripe: são cobradas com price_data a partir de lib/products.ts.
 // Uso:  STRIPE_SECRET_KEY=sk_test_... APP_URL=https://seudominio.com.br node scripts/stripe-setup.mjs
 // Rode primeiro com a chave de TESTE (sk_test_) e depois repita com a chave LIVE (sk_live_).
 import Stripe from "stripe";
@@ -54,12 +55,16 @@ if (appUrl.startsWith("https://")) {
     console.log("✔ Portal do cliente configurado");
   } catch (e) { console.warn("! Portal não configurado automaticamente:", e.message); }
 
+  const EVENTS = ["checkout.session.completed", "checkout.session.async_payment_succeeded", "checkout.session.async_payment_failed", "checkout.session.expired", "charge.refunded", "customer.subscription.created", "customer.subscription.updated", "customer.subscription.deleted"];
   const endpoints = await stripe.webhookEndpoints.list({ limit: 100 });
   const url = `${appUrl}/api/stripe/webhook`;
   const existing = endpoints.data.find((w) => w.url === url);
-  if (existing) console.log(`✔ Webhook já existe (${existing.id}). O segredo (whsec_) só é exibido na criação — copie do Dashboard.`);
+  if (existing) {
+    await stripe.webhookEndpoints.update(existing.id, { enabled_events: EVENTS });
+    console.log(`✔ Webhook já existe (${existing.id}); eventos atualizados. O segredo (whsec_) só é exibido na criação — copie do Dashboard.`);
+  }
   else {
-    const hook = await stripe.webhookEndpoints.create({ url, enabled_events: ["checkout.session.completed", "customer.subscription.created", "customer.subscription.updated", "customer.subscription.deleted"] });
+    const hook = await stripe.webhookEndpoints.create({ url, enabled_events: EVENTS });
     env.push(`STRIPE_WEBHOOK_SECRET="${hook.secret}"`);
     console.log(`✔ Webhook criado: ${url}`);
   }

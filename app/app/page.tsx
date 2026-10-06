@@ -48,10 +48,20 @@ export default async function Dashboard() {
         <MoonCard moon={moon} />
         <Card>
           <SectionTitle sub={`Plano ${PLANS[plan].name} · renova todo mês`}>Seu uso este mês</SectionTitle>
-          <div className="space-y-3">{usage.filter((u) => u.limit > 0).slice(0, 3).map((u) => <UsageMeter key={u.kind} label={u.label} used={u.used} limit={u.limit} />)}</div>
+          <div className="space-y-3">{usage.filter((u) => u.limit > 0).slice(0, 3).map((u) => <UsageMeter key={u.kind} label={u.label} used={u.used} limit={u.limit} credits={u.credits} />)}</div>
           {dreamUsage.used >= dreamUsage.limit && plan === "FREE" && <p className="mt-3 text-sm text-amber-300">Você usou todas as interpretações do mês. <Link href="/precos" className="underline">Faça upgrade</Link>.</p>}
         </Card>
       </div>
+
+      <Link href="/app/revolucao-solar" className="block rounded-2xl border border-amber-300/30 bg-linear-to-r from-amber-500/10 via-pink-500/10 to-purple-500/10 p-5 transition hover:border-amber-300/60">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-widest text-amber-300">Novo · consulta exclusiva</p>
+            <p className="text-lg font-semibold text-zinc-50">☀️ Revolução Solar: o que os astros reservam para o seu ano</p>
+          </div>
+          <span className="text-sm text-amber-200">Ver minha Revolução →</span>
+        </div>
+      </Link>
 
       {sign && horoscope ? (
         <HoroscopeCard sign={sign} content={horoscope} title={`Seu horóscopo de hoje · ${sign.name}`} />

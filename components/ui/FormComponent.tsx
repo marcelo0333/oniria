@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import OfferLinks from "@/components/app/OfferLinks";
 import Button from "./Button";
 import Loading from "./Loading";
 import { SelectField, Textarea } from "./Field";
@@ -14,7 +14,7 @@ import { createDreamAction } from "@/actions/process-dream-action";
 export function FormComponent() {
   const router = useRouter();
   const [pending, start] = useTransition();
-  const [error, setError] = useState<{ message: string; upgrade?: boolean; fields?: Record<string, string[] | undefined> } | null>(null);
+  const [error, setError] = useState<{ message: string; upgrade?: boolean; offer?: { id: string; name: string; price: string }; fields?: Record<string, string[] | undefined> } | null>(null);
   const [form, setForm] = useState({ description: "", type: "lucid", emotion: "calm", scenerie: "", intensity: 5 });
 
   if (pending) return <Loading text="Os astros leem o seu sonho… isso leva alguns segundos." />;
@@ -28,14 +28,15 @@ export function FormComponent() {
         start(async () => {
           const res = await createDreamAction(form);
           if (res.ok) router.push(`/app/sonhos/${res.id}`);
-          else setError({ message: res.error, upgrade: res.upgrade, fields: res.fieldErrors });
+          else setError({ message: res.error, upgrade: res.upgrade, offer: res.offer, fields: res.fieldErrors });
         });
       }}
     >
       {error && (
-        <p role="alert" className="rounded-xl border border-red-400/30 bg-red-500/15 px-4 py-3 text-sm text-red-200">
-          {error.message} {error.upgrade && <Link href="/precos" className="font-semibold underline">Ver planos</Link>}
-        </p>
+        <div role="alert" className="rounded-xl border border-red-400/30 bg-red-500/15 px-4 py-3 text-sm text-red-200">
+          {error.message}
+          {error.upgrade && <OfferLinks offer={error.offer} />}
+        </div>
       )}
       <Textarea label="Conte seu sonho" name="description" required minLength={15} maxLength={2000} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Descreva o que viu, quem estava lá, o que aconteceu e como terminou…" error={error?.fields?.description} hint={`${form.description.length}/2000`} />
       <div className="grid gap-5 sm:grid-cols-2">

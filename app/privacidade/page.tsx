@@ -21,7 +21,7 @@ export default function Page() {
             <li><strong>Conta:</strong> nome, e-mail, senha (armazenada apenas como hash).</li>
             <li><strong>Conteúdo que você informa:</strong> descrições de sonhos, cenários, emoções e perguntas de tarot.</li>
             <li><strong>Dados de nascimento (opcionais):</strong> data, hora e cidade — usados para calcular seu mapa astral. Podem ser considerados dados sensíveis em alguns contextos; por isso o fornecimento é opcional e baseado em seu consentimento.</li>
-            <li><strong>Assinatura:</strong> identificadores do cliente e da assinatura na Stripe, plano e status. Os dados de cartão são tratados exclusivamente pela Stripe.</li>
+            <li><strong>Pagamentos:</strong> identificadores do cliente, da assinatura e das compras avulsas na Stripe, plano, valores e status. Os dados de cartão e de Pix são tratados exclusivamente pela Stripe.</li>
             <li><strong>Uso e segurança:</strong> contagem de usos, endereço IP e registros técnicos para prevenção de fraude e limites de taxa.</li>
           </ul>
 
@@ -54,7 +54,7 @@ export default function Page() {
           <p>Usamos apenas um cookie essencial de sessão (<code>oniria_session</code>, httpOnly), necessário para manter você conectado(a). Não usamos cookies de publicidade. Se adicionarmos ferramentas de análise, este documento será atualizado e solicitaremos consentimento quando necessário.</p>
 
           <h2>7. Retenção</h2>
-          <p>Mantemos seus dados enquanto sua conta existir. Ao excluir a conta, apagamos seus dados em até 30 dias, exceto registros que devamos guardar por obrigação legal (ex.: fiscais, por até 5 anos) ou para defesa em processos.</p>
+          <p>Mantemos seus dados enquanto sua conta existir. Ao excluir a conta, apagamos seus dados em até 30 dias, exceto registros que devamos guardar por obrigação legal (ex.: registros de compras e notas fiscais, por até 5 anos — desvinculados do seu perfil) ou para defesa em processos.</p>
 
           <h2>8. Seus direitos (art. 18 da LGPD)</h2>
           <p>Você pode: confirmar a existência de tratamento; acessar, corrigir e <strong>exportar</strong> seus dados; solicitar anonimização, bloqueio ou <strong>eliminação</strong>; revogar consentimentos; obter informação sobre compartilhamentos; e peticionar à ANPD. No aplicativo, em <em>Perfil</em>, você pode editar dados, baixar uma cópia (JSON) e excluir a conta. Outras solicitações: <a href={`mailto:${dpo}`}>{dpo}</a>.</p>

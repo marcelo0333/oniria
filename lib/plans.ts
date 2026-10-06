@@ -20,7 +20,7 @@ export const PLANS: Record<Plan, PlanInfo> = {
     tagline: "Conheça o portal",
     priceMonthly: 0,
     priceYearly: 0,
-    limits: { DREAM: 3, ASTRAL: 1, TAROT_THREE: 1, COMPATIBILITY: 2, NUMEROLOGY: 1, imagesPerDream: 1, maxDreamsStored: 30 },
+    limits: { DREAM: 3, ASTRAL: 1, TAROT_THREE: 1, COMPATIBILITY: 2, NUMEROLOGY: 1, SOLAR_RETURN: 0, imagesPerDream: 1, maxDreamsStored: 30 },
     features: ["3 interpretações de sonhos por mês", "1 imagem por sonho", "Mapa astral básico (1/mês)", "Carta do dia e horóscopo diário", "Diário com até 30 sonhos"],
   },
   MISTICO: {
@@ -29,7 +29,7 @@ export const PLANS: Record<Plan, PlanInfo> = {
     tagline: "Para quem vive o místico",
     priceMonthly: 19.9,
     priceYearly: 179,
-    limits: { DREAM: 30, ASTRAL: 3, TAROT_THREE: 15, COMPATIBILITY: 15, NUMEROLOGY: 5, imagesPerDream: 2, maxDreamsStored: Infinity },
+    limits: { DREAM: 30, ASTRAL: 3, TAROT_THREE: 15, COMPATIBILITY: 15, NUMEROLOGY: 5, SOLAR_RETURN: 0, imagesPerDream: 2, maxDreamsStored: Infinity },
     features: ["30 interpretações por mês", "2 imagens por sonho (cena + emoção)", "Mapa astral completo com leitura", "Tarot de 3 cartas (15/mês)", "Compatibilidade e numerologia", "Diário ilimitado"],
     highlight: true,
   },
@@ -39,8 +39,8 @@ export const PLANS: Record<Plan, PlanInfo> = {
     tagline: "Experiência sem limites",
     priceMonthly: 39.9,
     priceYearly: 359,
-    limits: { DREAM: 150, ASTRAL: 10, TAROT_THREE: 60, COMPATIBILITY: 60, NUMEROLOGY: 20, imagesPerDream: 2, maxDreamsStored: Infinity },
-    features: ["150 interpretações por mês (uso justo)", "Todos os recursos do Místico", "Limites 4× maiores em tarot e compatibilidade", "Prioridade em novos recursos", "Suporte prioritário"],
+    limits: { DREAM: 150, ASTRAL: 10, TAROT_THREE: 60, COMPATIBILITY: 60, NUMEROLOGY: 20, SOLAR_RETURN: 1, imagesPerDream: 2, maxDreamsStored: Infinity },
+    features: ["150 interpretações por mês (uso justo)", "Revolução Solar inclusa (1/mês)", "Todos os recursos do Místico", "Limites 4× maiores em tarot e compatibilidade", "Prioridade em novos recursos", "Suporte prioritário"],
   },
 };
 
@@ -52,6 +52,7 @@ export const USAGE_LABEL: Record<UsageKind, string> = {
   TAROT_THREE: "tiragens de tarot",
   COMPATIBILITY: "análises de compatibilidade",
   NUMEROLOGY: "leituras de numerologia",
+  SOLAR_RETURN: "revoluções solares",
 };
 
 /** Plano efetivo: assinatura inativa/vencida volta para o grátis. */

@@ -35,6 +35,7 @@ export default function UserComponent({ user }: Props) {
           <div className="border-t border-white/10 p-2 flex flex-col text-sm">
             <Link role="menuitem" href="/app" className="rounded-lg px-3 py-2 text-zinc-300 hover:bg-white/10" onClick={() => setOpen(false)}>Meu painel</Link>
             <Link role="menuitem" href="/app/perfil" className="rounded-lg px-3 py-2 text-zinc-300 hover:bg-white/10" onClick={() => setOpen(false)}>Perfil</Link>
+            <Link role="menuitem" href="/app/consultas" className="rounded-lg px-3 py-2 text-zinc-300 hover:bg-white/10" onClick={() => setOpen(false)}>Minhas consultas</Link>
             <Link role="menuitem" href="/app/assinatura" className="rounded-lg px-3 py-2 text-zinc-300 hover:bg-white/10" onClick={() => setOpen(false)}>Assinatura</Link>
             <form action={logout}>
               <button role="menuitem" type="submit" className="w-full text-left rounded-lg px-3 py-2 text-red-300 hover:bg-red-500/10">Sair</button>

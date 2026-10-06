@@ -24,10 +24,7 @@ export async function proxy(req: NextRequest) {
     url.searchParams.set("next", pathname);
     return NextResponse.redirect(url);
   }
-  if ((pathname === "/entrar" || pathname === "/cadastro") && authed) {
-    return NextResponse.redirect(new URL("/app", req.url));
-  }
   return NextResponse.next();
 }
 
-export const config = { matcher: ["/app/:path*", "/entrar", "/cadastro"] };
+export const config = { matcher: ["/app/:path*"] };

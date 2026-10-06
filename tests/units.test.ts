@@ -79,3 +79,22 @@ describe("utilitários", () => {
     expect(todayBR(new Date("2026-01-10T12:00:00Z"))).toBe("2026-01-10");
   });
 });
+
+describe("redirecionamento seguro", async () => {
+  const { safeNext } = await import("@/lib/safe-next");
+  it.each([
+    ["/app", "/app"], ["/app/tarot?r=1", "/app/tarot?r=1"], ["/consultas?comprar=sonho", "/consultas?comprar=sonho"], ["/precos", "/precos"],
+    ["//evil.com", null], ["https://evil.com", null], ["/\\evil.com", null], ["/admin", null], ["/apple", null], [undefined, null],
+  ])("%s => %s", (input, out) => expect(safeNext(input)).toBe(out));
+});
+
+describe("descadastro de e-mail", async () => {
+  const { unsubscribeUrl, verifyUnsubscribe } = await import("@/lib/unsubscribe");
+  it("assinatura válida só para o próprio usuário", () => {
+    process.env.SESSION_SECRET = "test-secret-test-secret-test-secret-123";
+    const url = new URL(unsubscribeUrl("https://x.com", "user-1"));
+    expect(verifyUnsubscribe("user-1", url.searchParams.get("s"))).toBe(true);
+    expect(verifyUnsubscribe("user-2", url.searchParams.get("s"))).toBe(false);
+    expect(verifyUnsubscribe("user-1", "x")).toBe(false);
+  });
+});

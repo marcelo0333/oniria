@@ -28,7 +28,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ r
     <div className="space-y-8">
       <header><h1 className="text-3xl font-semibold">Numerologia</h1><p className="mt-1 text-zinc-400">Os números do seu nome e da sua data de nascimento (sistema pitagórico).</p></header>
       <Card className="space-y-4">
-        <UsageMeter label={quota.label} used={quota.used} limit={quota.limit} />
+        <UsageMeter label={quota.label} used={quota.used} limit={quota.limit} credits={quota.credits} />
         <NumerologyForm defaultName={user.name} defaultDate={user.birthDate ?? ""} />
       </Card>
       {out && (

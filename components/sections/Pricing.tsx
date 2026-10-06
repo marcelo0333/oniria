@@ -1,6 +1,6 @@
 import { Check } from "lucide-react";
 import { PAID_PLANS, PLANS, formatBRL } from "@/lib/plans";
-import { startCheckout } from "@/actions/billing";
+import { openPortal, startCheckout } from "@/actions/billing";
 import Button, { ButtonLink } from "@/components/ui/Button";
 import type { CurrentUser } from "@/lib/auth";
 import { effectivePlan } from "@/lib/plans";
@@ -30,6 +30,10 @@ export default function Pricing({ user, yearly = false }: { user: CurrentUser | 
               current ? <Button variant="outline" disabled>{current === "FREE" ? "Seu plano atual" : "Incluído"}</Button> : <ButtonLink href="/cadastro" variant="outline">Começar grátis</ButtonLink>
             ) : current === id ? (
               <ButtonLink href="/app/assinatura" variant="outline">Seu plano atual</ButtonLink>
+            ) : user && current && current !== "FREE" ? (
+              <form action={openPortal}>
+                <Button type="submit" variant={p.highlight ? "primary" : "outline"} className="w-full">Mudar para {p.name}</Button>
+              </form>
             ) : user ? (
               <form action={startCheckout}>
                 <input type="hidden" name="plan" value={id} />

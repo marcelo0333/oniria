@@ -4,11 +4,19 @@ import { requireUser } from "@/lib/auth";
 import { QuotaError } from "@/lib/usage";
 import { AIError } from "@/lib/ai";
 import { UserFacingError } from "@/lib/services/errors";
+import { generateSolarReturn } from "@/lib/services/solar-return";
+import { productForKind, formatCents } from "@/lib/products";
 import { generateAstralReading, generateCompatibility, generateNumerology, generateThreeCardTarot, getDailyTarot } from "@/lib/services/readings";
 import { revalidatePath } from "next/cache";
 import { logger } from "@/lib/logger";
 
-export type ReadingResult = { ok: true; id: string } | { ok: false; error: string; upgrade?: boolean };
+export type Offer = { id: string; name: string; price: string };
+export type ReadingResult = { ok: true; id: string } | { ok: false; error: string; upgrade?: boolean; offer?: Offer };
+
+function offerFor(error: QuotaError): Offer | undefined {
+  const p = productForKind(error.kind);
+  return p && { id: p.id, name: p.name, price: formatCents(p.amount) };
+}
 
 async function run(label: string, fn: () => Promise<{ id: string }>, path: string): Promise<ReadingResult> {
   try {
@@ -16,7 +24,7 @@ async function run(label: string, fn: () => Promise<{ id: string }>, path: strin
     revalidatePath(path);
     return { ok: true, id: reading.id };
   } catch (error) {
-    if (error instanceof QuotaError) return { ok: false, error: error.message, upgrade: true };
+    if (error instanceof QuotaError) return { ok: false, error: error.message, upgrade: true, offer: offerFor(error) };
     if (error instanceof UserFacingError || error instanceof AIError) return { ok: false, error: error.message };
     logger.error(`Erro em ${label}`, error);
     return { ok: false, error: "Algo deu errado. Sua cota não foi consumida. Tente novamente." };
@@ -46,4 +54,9 @@ export async function compatibilityAction(a: string, b: string): Promise<Reading
 export async function numerologyAction(fullName: string, birthDate: string): Promise<ReadingResult> {
   const user = await requireUser();
   return run("numerologia", () => generateNumerology(user, fullName, birthDate), "/app/numerologia");
+}
+
+export async function solarReturnAction(): Promise<ReadingResult> {
+  const user = await requireUser();
+  return run("revolucao-solar", () => generateSolarReturn(user), "/app/revolucao-solar");
 }

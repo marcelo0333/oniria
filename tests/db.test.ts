@@ -38,6 +38,27 @@ describe.skipIf(!hasDb)("cota e rate limit (Postgres)", () => {
     await reserveUsage(user, "NUMEROLOGY");
   });
 
+  it("esgotada a cota do plano, consome créditos avulsos (sem estourar sob concorrência) e o estorno devolve o crédito", async () => {
+    const { reserveUsage, refundUsage, QuotaError, usageThisMonth } = await import("@/lib/usage");
+    const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
+    // SOLAR_RETURN: 0 no plano grátis → só com crédito
+    await expect(reserveUsage(user, "SOLAR_RETURN")).rejects.toBeInstanceOf(QuotaError);
+    await prisma.creditBalance.create({ data: { userId, kind: "SOLAR_RETURN", balance: 2 } });
+    const results = await Promise.allSettled(Array.from({ length: 6 }, () => reserveUsage(user, "SOLAR_RETURN")));
+    const ids = results.filter((r): r is PromiseFulfilledResult<string> => r.status === "fulfilled").map((r) => r.value);
+    expect(ids).toHaveLength(2);
+    expect((await prisma.creditBalance.findUniqueOrThrow({ where: { userId_kind: { userId, kind: "SOLAR_RETURN" } } })).balance).toBe(0);
+    await refundUsage(ids[0]);
+    expect((await prisma.creditBalance.findUniqueOrThrow({ where: { userId_kind: { userId, kind: "SOLAR_RETURN" } } })).balance).toBe(1);
+    // créditos não contam como uso do plano
+    expect(await usageThisMonth(userId, "SOLAR_RETURN")).toBe(0);
+    // DREAM: cota (3) já usada no teste anterior → próximo consome crédito
+    await prisma.creditBalance.create({ data: { userId, kind: "DREAM", balance: 1 } });
+    const ev = await reserveUsage(user, "DREAM");
+    expect((await prisma.usageEvent.findUniqueOrThrow({ where: { id: ev } })).source).toBe("CREDIT");
+    await expect(reserveUsage(user, "DREAM")).rejects.toBeInstanceOf(QuotaError);
+  });
+
   it("rate limit bloqueia após o limite e informa retry", async () => {
     const { rateLimit } = await import("@/lib/rate-limit");
     const key = `test:${Date.now()}`;

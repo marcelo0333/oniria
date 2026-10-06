@@ -2,15 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarHeart, CreditCard, Home, Moon, Sparkles, Stars, User, Hash } from "lucide-react";
+import { CalendarHeart, CreditCard, Home, Moon, Sparkles, Stars, User, Hash, Sun, ShoppingBag } from "lucide-react";
 
 const ITEMS = [
   { href: "/app", label: "Painel", icon: Home, exact: true },
   { href: "/app/sonhos", label: "Sonhos", icon: Moon },
   { href: "/app/mapa-astral", label: "Mapa astral", icon: Stars },
+  { href: "/app/revolucao-solar", label: "Revolução Solar", icon: Sun },
   { href: "/app/tarot", label: "Tarot", icon: Sparkles },
   { href: "/app/compatibilidade", label: "Compatibilidade", icon: CalendarHeart },
   { href: "/app/numerologia", label: "Numerologia", icon: Hash },
+  { href: "/app/consultas", label: "Consultas avulsas", icon: ShoppingBag },
   { href: "/app/assinatura", label: "Assinatura", icon: CreditCard },
   { href: "/app/perfil", label: "Perfil", icon: User },
 ];

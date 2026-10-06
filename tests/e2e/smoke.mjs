@@ -49,7 +49,7 @@ try {
   await page.fill('textarea[name=description]', "Eu estava num farol à beira de um mar escuro, e a lua cheia iluminava as ondas.");
   await page.click('button:has-text("Interpretar meu sonho")');
   await page.waitForURL(/\/app\/sonhos\/[0-9a-f-]{36}/, { timeout: 30000 });
-  await page.waitForSelector("text=O Farol sobre o Mar", { timeout: 10000 });
+  await page.waitForSelector("text=O Farol na Maré da Lua", { timeout: 10000 });
   ok("sonho interpretado e salvo", true);
   const dreamUrl = page.url();
 
@@ -58,7 +58,7 @@ try {
   ok("link público gerado", true);
 
   await page.goto(`${BASE}/app/sonhos`);
-  ok("sonho aparece no diário", await page.locator("text=O Farol sobre o Mar").count() > 0);
+  ok("sonho aparece no diário", await page.locator("text=O Farol na Maré da Lua").count() > 0);
 
   await page.goto(`${BASE}/app/mapa-astral`);
   await page.waitForSelector("text=Ascendente", { timeout: 15000 });
@@ -88,12 +88,20 @@ try {
   await page.click('button:has-text("Tirar 3 cartas")');
   await page.waitForSelector("text=atingiu o limite", { timeout: 15000 });
   ok("cota grátis bloqueia 2ª tiragem", true);
+  ok("oferece consulta avulsa quando a cota acaba", await page.locator("text=Comprar Tarot de 3 cartas").count() > 0);
+
+  await page.goto(`${BASE}/app/revolucao-solar`);
+  ok("revolução solar: mapa calculado e oferta de compra", (await page.locator("text=Mapa da Revolução").count()) > 0 && (await page.locator('button:has-text("Comprar por")').count()) > 0);
+
+  // sem Stripe configurado, a compra avulsa avisa que está indisponível (não quebra)
+  await page.goto(`${BASE}/consultas`);
+  ok("catálogo de consultas avulsas", (await page.locator("text=Revolução Solar").count()) > 0);
 
   // público: página compartilhada
   const token = await page.evaluate(async () => null);
   void token;
 
-  for (const path of ["/signos", "/signos/escorpiao", "/lua", "/simbolos", "/simbolos/cobra", "/precos", "/termos", "/privacidade", "/contato", "/sitemap.xml", "/robots.txt"]) {
+  for (const path of ["/signos", "/signos/escorpiao", "/lua", "/simbolos", "/simbolos/cobra", "/precos", "/consultas", "/termos", "/privacidade", "/contato", "/sitemap.xml", "/robots.txt"]) {
     const res = await page.goto(`${BASE}${path}`);
     ok(`GET ${path}`, res?.status() === 200, `(${res?.status()})`);
   }

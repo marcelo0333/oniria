@@ -10,6 +10,8 @@ Legenda: 🧾 financeiro/legal · 🌐 infra · 🔑 contas/chaves · ✅ valida
 
 ## Resumo: o que falta (e quem faz)
 
+> Situação: **produto completo** — assinaturas (Grátis/Místico/Oráculo) **e consultas avulsas** (Revolução Solar, mapa, sonhos, tarot, compatibilidade, numerologia; Pix ou cartão). Falta apenas a **camada financeira e legal** abaixo + chaves de produção.
+
 | # | Item | Tipo | Quem | Prazo típico |
 |---|---|---|---|---|
 | 1 | CNPJ (ME/Simples) + contador | 🧾 | Você + contador | 2–7 dias |
@@ -41,8 +43,8 @@ Legenda: 🧾 financeiro/legal · 🌐 infra · 🔑 contas/chaves · ✅ valida
 
 ## 3. 🧾🔑 Stripe (pagamentos)
 1. Crie a conta em stripe.com/br, país **Brasil**, e conclua a **ativação** (dados da empresa, sócios, conta bancária PJ, descrição do negócio: *"assinatura de aplicativo de autoconhecimento: sonhos e astrologia"*). Informe o site já no ar (passo 5/6) — o Stripe revisa a URL, os Termos e a política de reembolso.
-2. **Ative cartões** (e, se disponível na sua conta, **Pix**/boleto em Configurações → Métodos de pagamento). Assinaturas recorrentes funcionam melhor com cartão; Pix recorrente depende da disponibilidade do *Pix Automático* — confirme no painel antes de prometer.
-3. Em **modo de teste**, rode `STRIPE_SECRET_KEY=sk_test_... APP_URL=https://staging.seudominio.com.br node scripts/stripe-setup.mjs` — cria produtos, 4 preços (R$ 19,90/179,00 e R$ 39,90/359,00), o **Portal do Cliente** e o **webhook**, e imprime as variáveis `STRIPE_PRICE_*` e `STRIPE_WEBHOOK_SECRET`.
+2. **Ative cartões e Pix** em *Configurações → Pagamentos → Métodos de pagamento*. As **consultas avulsas** usam os métodos dinâmicos do Checkout: com Pix ativo, ele aparece automaticamente (sem mudar código). Assinaturas usam cartão (Pix recorrente depende do *Pix Automático* — confirme no painel antes de prometer).
+3. Em **modo de teste**, rode `STRIPE_SECRET_KEY=sk_test_... APP_URL=https://staging.seudominio.com.br node scripts/stripe-setup.mjs` — cria produtos, 4 preços de assinatura (R$ 19,90/179,00 e R$ 39,90/359,00), o **Portal do Cliente** e o **webhook** (com os eventos de assinatura **e** de pagamento único: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`, `charge.refunded`) e imprime `STRIPE_PRICE_*` e `STRIPE_WEBHOOK_SECRET`. As consultas avulsas não precisam de cadastro de preço: valores ficam em `lib/products.ts`.
 4. Em **modo live**, repita com `sk_live_...` e o domínio de produção.
 5. Painel Stripe → *Configurações → Faturamento → Portal do cliente*: confirme cancelamento "ao fim do período", troca de plano e atualização de cartão.
 6. Painel → *Radar*: mantenha as regras padrão antifraude; ative e-mails de recibo e de falha de pagamento (*Configurações → E-mails*), pois a Oniria não reenvia recibos.
@@ -52,9 +54,9 @@ Legenda: 🧾 financeiro/legal · 🌐 infra · 🔑 contas/chaves · ✅ valida
 > Alternativas se o Stripe recusar a conta: Mercado Pago, Pagar.me, Asaas ou Iugu (exigiria trocar `lib/stripe.ts` e o webhook; a lógica de planos/cotas é independente do provedor).
 
 ## 4. 🧾 Nota fiscal e impostos
-- O Stripe **não emite NFS-e**. Contrate um emissor integrável (Focus NFe, eNotas, PlugNotas ou o do seu contador) e defina a rotina: emitir a nota **por cobrança paga** (webhook `invoice.paid`/relatório mensal do Stripe).
+- O Stripe **não emite NFS-e**. Contrate um emissor integrável (Focus NFe, eNotas, PlugNotas ou o do seu contador) e defina a rotina: emitir a nota **por cobrança paga** — renovações de assinatura e **consultas avulsas** (tabela `Purchase` com status `PAID`, ou relatório de pagamentos do Stripe). Integração automática pelo webhook é um passo opcional futuro.
 - Impostos: DAS (Simples), ISS municipal (alíquota depende da cidade). Guarde os relatórios de repasse do Stripe para conciliação.
-- Política de **reembolso**: 7 dias (CDC, art. 49). Reembolso = Painel Stripe → Pagamentos → Reembolsar; cancele a nota correspondente.
+- Política de **reembolso**: 7 dias (CDC, art. 49). Reembolso = Painel Stripe → Pagamentos → Reembolsar; cancele a nota correspondente. Para consultas avulsas, o reembolso total remove automaticamente os créditos ainda não usados (webhook `charge.refunded`); verifique em `/app/consultas` do cliente ou na tabela `Purchase`.
 
 ## 5. 🌐 Domínio e DNS
 1. Registre o domínio em **registro.br** (`.com.br`, exige CPF/CNPJ) e/ou `.com`/`.app`.
@@ -72,7 +74,7 @@ Legenda: 🧾 financeiro/legal · 🌐 infra · 🔑 contas/chaves · ✅ valida
 **Opção B — Docker (Fly.io, Railway, Render, VPS)**
 1. `docker build --target runner -t oniria .` e `docker build --target migrate -t oniria-migrate .`
 2. Rode o `migrate` (uma vez por release) com `DATABASE_URL`, depois suba o `runner` com todas as variáveis e porta 3000.
-3. Agende `GET /api/cron/daily` com header `Authorization: Bearer $CRON_SECRET` uma vez ao dia (cron do provedor/GitHub Actions/cron-job.org).
+3. Agende `GET /api/cron/daily?task=horoscopes` (03:05 UTC) e `GET /api/cron/daily?task=emails` (10:00 UTC) com header `Authorization: Bearer $CRON_SECRET` (cron do provedor/GitHub Actions/cron-job.org).
 4. Coloque HTTPS na frente (o provedor ou Cloudflare/Caddy/Nginx).
 
 **Banco Postgres gerenciado**: Neon, Supabase, Railway ou AWS RDS (região São Paulo/`sa-east-1` ou a mais próxima). Exija SSL (`?sslmode=require`), ative **backups diários/PITR** e crie um usuário só para a aplicação. Dimensione conexões (`DATABASE_POOL_MAX`; em serverless use o pooler/PgBouncer do provedor).
@@ -97,13 +99,14 @@ Legenda: 🧾 financeiro/legal · 🌐 infra · 🔑 contas/chaves · ✅ valida
 Em **staging** (mesma infra, Stripe em modo teste):
 1. `npm run lint && npm run typecheck && npm test && npm run build` (CI já faz).
 2. `bash tests/e2e/run.sh` (smoke com Gemini falso) e, com chaves reais em staging, interprete 1 sonho, gere mapa, tarot, compatibilidade e numerologia.
-3. Compra com cartão de teste `4242 4242 4242 4242`: confira plano liberado, cota maior, e-mail de confirmação, portal (trocar cartão, cancelar) e downgrade ao fim do período.
-4. Webhook: Stripe Dashboard → Webhooks → *Reenviar evento*; deve responder 200 e ser idempotente. Em dev: `stripe listen --forward-to localhost:3000/api/stripe/webhook`.
-5. Cartão que falha (`4000 0000 0000 0341`): status `past_due` mostra aviso na página de assinatura.
-6. Cron: `curl -H "Authorization: Bearer $CRON_SECRET" https://seudominio.com.br/api/cron/daily` → 200 com `sent`.
-7. Exclusão de conta (LGPD) cancela a assinatura e apaga os dados; exportação JSON baixa.
-8. Lighthouse (mobile) ≥ 90 nas páginas públicas; teste em iOS Safari e Android Chrome.
-9. **Compra real** de R$ 19,90 em live com seu próprio cartão → depois **reembolse**. Confirme o recebimento no Stripe e a emissão da NFS-e.
+3. Compra com cartão de teste `4242 4242 4242 4242`: confira plano liberado, cota maior, e-mail de confirmação, portal (trocar cartão, trocar de plano, cancelar → “cancelamento agendado”) e downgrade ao fim do período.
+4. **Consulta avulsa**: compre a Revolução Solar em `/consultas` com cartão de teste → volta em `/app/consultas` com “Pagamento confirmado” e 1 crédito → gere a Revolução Solar. Repita com **Pix de teste** (no modo teste o Stripe simula a confirmação) e confira que a compra fica “aguardando pagamento” até o webhook. Reembolse pelo painel e confira os créditos removidos.
+5. Webhook: Stripe Dashboard → Webhooks → *Reenviar evento*; deve responder 200 e ser idempotente. Em dev: `stripe listen --forward-to localhost:3000/api/stripe/webhook`.
+6. Cartão que falha (`4000 0000 0000 0341`): status `past_due` mostra aviso na página de assinatura.
+7. Cron: `curl -H "Authorization: Bearer $CRON_SECRET" "https://seudominio.com.br/api/cron/daily?task=horoscopes"` e `?task=emails` → 200. No Vercel os dois já estão agendados em `vercel.json` (00h05 e 07h de Brasília).
+8. Exclusão de conta (LGPD) cancela a assinatura e apaga os dados; exportação JSON baixa.
+9. Lighthouse (mobile) ≥ 90 nas páginas públicas; teste em iOS Safari e Android Chrome.
+10. **Compra real** de R$ 4,90 (sonho avulso, via Pix) e de R$ 19,90 em live com seu próprio cartão → depois **reembolse**. Confirme o recebimento no Stripe e a emissão da NFS-e.
 
 ## 11. 🌐 Operação e segurança
 - **Monitoramento**: UptimeRobot/Better Stack em `https://seudominio.com.br/api/health` (alerta por e-mail/Telegram). Logs estruturados (JSON) saem em stdout/Vercel Logs. Recomendado: Sentry (`@sentry/nextjs`) para erros.

@@ -24,7 +24,9 @@ export async function GET(req: Request) {
   const suffix = params.kind === "scene" ? IMAGE_SUFFIX_SCENE : IMAGE_SUFFIX_ABSTRACT;
   const query = new URLSearchParams({ model: "flux", width: "1024", height: "1024", nologo: "true", negative_prompt: "worst quality, blurry, text, watermark" });
   const key = env.pollinationsKey();
-  const upstream = `https://gen.pollinations.ai/image/${encodeURIComponent(params.prompt + suffix)}?${query}`;
+  // POLLINATIONS_BASE_URL só é usado em testes (servidor falso); em produção fica vazio.
+  const base = process.env.POLLINATIONS_BASE_URL || "https://gen.pollinations.ai";
+  const upstream = `${base}/image/${encodeURIComponent(params.prompt + suffix)}?${query}`;
   try {
     const res = await fetch(upstream, { headers: key ? { Authorization: `Bearer ${key}` } : {}, signal: AbortSignal.timeout(55_000) });
     if (!res.ok) throw new Error(`upstream ${res.status}`);

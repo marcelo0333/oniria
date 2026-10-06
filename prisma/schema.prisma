@@ -28,6 +28,20 @@ enum UsageKind {
   TAROT_THREE
   COMPATIBILITY
   NUMEROLOGY
+  SOLAR_RETURN
+}
+
+enum UsageSource {
+  PLAN // consumiu a cota mensal do plano
+  CREDIT // consumiu um crédito de consulta avulsa
+}
+
+enum PurchaseStatus {
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
+  REFUNDED
 }
 
 enum ReadingKind {
@@ -36,6 +50,7 @@ enum ReadingKind {
   TAROT_THREE
   COMPATIBILITY
   NUMEROLOGY
+  SOLAR_RETURN
 }
 
 model User {
@@ -65,14 +80,17 @@ model User {
   stripeSubscriptionId String?   @unique
   subscriptionStatus   String?
   currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean   @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  dreams   Dream[]
-  readings Reading[]
-  usage    UsageEvent[]
-  tokens   AuthToken[]
+  dreams    Dream[]
+  readings  Reading[]
+  usage     UsageEvent[]
+  tokens    AuthToken[]
+  credits   CreditBalance[]
+  purchases Purchase[]
 }
 
 model Dream {
@@ -119,9 +137,10 @@ model Reading {
 }
 
 model UsageEvent {
-  id        String    @id @default(uuid())
+  id        String      @id @default(uuid())
   kind      UsageKind
-  createdAt DateTime  @default(now())
+  source    UsageSource @default(PLAN)
+  createdAt DateTime    @default(now())
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -163,4 +182,36 @@ model StripeEvent {
   id          String   @id // event.id do Stripe (idempotência)
   type        String
   processedAt DateTime @default(now())
+}
+
+/// Saldo de consultas avulsas compradas (não expiram).
+model CreditBalance {
+  userId    String
+  kind      UsageKind
+  balance   Int       @default(0)
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, kind])
+}
+
+/// Compra única (consulta avulsa / pacote). Criada como PENDING no checkout; vira PAID pelo webhook ou no retorno.
+model Purchase {
+  id                    String         @id @default(uuid())
+  productId             String // id do catálogo em lib/products.ts
+  kind                  UsageKind
+  quantity              Int
+  amount                Int // centavos (BRL)
+  currency              String         @default("brl")
+  status                PurchaseStatus @default(PENDING)
+  stripeSessionId       String?        @unique
+  stripePaymentIntentId String?        @unique
+  paidAt                DateTime?
+  refundedAt            DateTime?
+  createdAt             DateTime       @default(now())
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
 }

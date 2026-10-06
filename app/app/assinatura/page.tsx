@@ -29,7 +29,12 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
           <div>
             <p className="text-sm text-zinc-500">Plano atual</p>
             <p className="text-2xl font-semibold">{PLANS[plan].name} {paid && <Badge tone="green">{user.subscriptionStatus === "past_due" ? "pagamento pendente" : "ativo"}</Badge>}</p>
-            {paid && user.currentPeriodEnd && <p className="mt-1 text-sm text-zinc-400">Próxima renovação/vencimento: {formatDateBR(user.currentPeriodEnd, { dateStyle: "long" })}</p>}
+            {paid && user.currentPeriodEnd && (
+              <p className="mt-1 text-sm text-zinc-400">
+                {user.cancelAtPeriodEnd ? "Cancelamento agendado — acesso até " : "Próxima renovação: "}
+                {formatDateBR(user.currentPeriodEnd, { dateStyle: "long" })}
+              </p>
+            )}
           </div>
           {paid && billingEnabled() ? (
             <form action={openPortal}><Button type="submit" variant="outline">Gerenciar assinatura</Button></form>
@@ -39,9 +44,13 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
         </div>
         {user.subscriptionStatus === "past_due" && <p className="mt-3 text-sm text-amber-300">Não conseguimos cobrar seu cartão. Atualize o pagamento em “Gerenciar assinatura” para não perder o acesso.</p>}
       </Card>
+      <Card className="flex flex-wrap items-center justify-between gap-3">
+        <div><p className="font-semibold">Consultas avulsas</p><p className="text-sm text-zinc-400">Revolução Solar, mapa, sonhos e mais — pagamento único, Pix ou cartão.</p></div>
+        <ButtonLink href="/app/consultas" variant="outline" size="sm">Ver minhas consultas</ButtonLink>
+      </Card>
       <Card>
-        <SectionTitle sub="Os limites renovam no primeiro dia de cada mês">Uso neste mês</SectionTitle>
-        <div className="space-y-3">{usage.map((u) => <UsageMeter key={u.kind} label={u.label} used={u.used} limit={u.limit} />)}</div>
+        <SectionTitle sub="Os limites renovam no primeiro dia de cada mês; créditos avulsos não expiram">Uso neste mês</SectionTitle>
+        <div className="space-y-3">{usage.map((u) => <UsageMeter key={u.kind} label={u.label} used={u.used} limit={u.limit} credits={u.credits} />)}</div>
       </Card>
       <p className="text-center text-xs text-zinc-500">Cancele quando quiser — o acesso segue até o fim do período pago. Arrependimento em até 7 dias: <Link href="/contato" className="underline">fale com o suporte</Link>.</p>
     </div>

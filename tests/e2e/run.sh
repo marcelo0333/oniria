@@ -4,7 +4,7 @@ set -u
 cd "$(dirname "$0")/../.."
 PORT=4010 node tests/e2e/fake-gemini.mjs > /tmp/fake-gemini.log 2>&1 &
 G=$!
-STRIPE_SECRET_KEY=sk_test_x STRIPE_WEBHOOK_SECRET=whsec_test STRIPE_PRICE_MISTICO_MONTHLY=price_mistico_m EMAIL_LOG_TO_CONSOLE=1 npx next start -p 3000 > /tmp/next.log 2>&1 &
+POLLINATIONS_BASE_URL=http://localhost:4010 STRIPE_SECRET_KEY=sk_test_x STRIPE_WEBHOOK_SECRET=whsec_test STRIPE_PRICE_MISTICO_MONTHLY=price_mistico_m EMAIL_LOG_TO_CONSOLE=1 npx next start -p 3000 > /tmp/next.log 2>&1 &
 N=$!
 trap 'kill $G $N 2>/dev/null' EXIT
 for i in $(seq 1 30); do curl -sf localhost:3000/api/health >/dev/null && break; sleep 1; done

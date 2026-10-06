@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SiteShell, { PageContainer } from "@/components/layout/SiteShell";
 import Pricing from "@/components/sections/Pricing";
+import ProductGrid from "@/components/sections/ProductGrid";
 import { getCurrentUser } from "@/lib/auth";
 
 export const metadata: Metadata = {
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
 const FAQ = [
   ["Posso cancelar quando quiser?", "Sim. O cancelamento é feito em um clique no portal de assinatura e o acesso segue até o fim do período pago."],
   ["Existe garantia?", "Sim: 7 dias de garantia incondicional na primeira compra. Se não gostar, devolvemos o valor."],
-  ["Quais formas de pagamento?", "Cartão de crédito (Visa, Mastercard, Elo, Amex), processado com segurança pela Stripe. Não guardamos dados do seu cartão."],
+  ["Quais formas de pagamento?", "Assinaturas: cartão de crédito. Consultas avulsas: Pix ou cartão. Tudo processado com segurança pela Stripe — não guardamos dados do seu cartão."],
   ["O que acontece quando o limite do mês acaba?", "Você pode esperar a renovação (todo dia 1º) ou fazer upgrade na hora. Nada é cobrado automaticamente a mais."],
   ["As interpretações são previsões?", "Não. A Oniria é um produto de entretenimento e autoconhecimento que une simbolismo, psicologia e astrologia."],
 ];
@@ -36,6 +37,11 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
           {sp.status === "erro" && <p className="mt-4 text-sm text-red-300">Não foi possível iniciar o pagamento. Tente novamente.</p>}
         </header>
         <Pricing user={user} yearly={yearly} />
+        <section className="mt-20">
+          <h2 className="mb-2 text-center text-2xl font-semibold">Ou compre só o que precisa</h2>
+          <p className="mb-8 text-center text-zinc-400">Consultas avulsas, pagamento único no Pix ou cartão. <Link href="/consultas" className="text-purple-300 hover:underline">Ver todas</Link></p>
+          <ProductGrid compact />
+        </section>
         <section className="mx-auto mt-20 max-w-3xl">
           <h2 className="mb-6 text-center text-2xl font-semibold">Perguntas frequentes</h2>
           <div className="space-y-3">

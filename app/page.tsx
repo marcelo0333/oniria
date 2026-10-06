@@ -3,6 +3,7 @@ import Link from "next/link";
 import SiteShell from "@/components/layout/SiteShell";
 import Hero from "@/components/sections/Hero";
 import Pricing from "@/components/sections/Pricing";
+import ProductGrid from "@/components/sections/ProductGrid";
 import Card from "@/components/ui/Card";
 import { ButtonLink } from "@/components/ui/Button";
 import { getCurrentUser } from "@/lib/auth";
@@ -25,7 +26,7 @@ const FEATURES = [
   ["💞", "Compatibilidade", "Descubra a química entre quaisquer dois signos em amor, amizade, comunicação e paixão."],
   ["🔢", "Numerologia", "Caminho de vida, expressão, alma e ano pessoal a partir do seu nome e data de nascimento."],
   ["📓", "Diário de sonhos", "Guarde, busque e favorite seus sonhos. Veja os símbolos que se repetem na sua vida."],
-  ["🔗", "Compartilhe", "Gere um link bonito do seu sonho para mandar a amigos ou postar nas redes."],
+  ["☀️", "Revolução Solar", "As previsões do seu ano astrológico, calculadas no instante exato em que o Sol volta ao seu ponto de nascimento."],
 ];
 
 const STEPS = [
@@ -101,6 +102,13 @@ export default async function Home() {
         <h2 id="planos" className="mb-2 text-center text-3xl font-semibold">Comece grátis, evolua quando quiser</h2>
         <p className="mb-10 text-center text-zinc-400">7 dias de garantia. Cancele em um clique.</p>
         <Pricing user={user} />
+      </section>
+
+      <section className="mx-auto mt-24 max-w-6xl px-4" aria-labelledby="avulsas">
+        <h2 id="avulsas" className="mb-2 text-center text-3xl font-semibold">Prefere sem assinatura?</h2>
+        <p className="mb-10 text-center text-zinc-400">Consultas avulsas com pagamento único no Pix ou cartão. O crédito não expira.</p>
+        <ProductGrid compact />
+        <p className="mt-6 text-center"><Link href="/consultas" className="text-purple-300 hover:underline">Ver todas as consultas avulsas →</Link></p>
       </section>
 
       <section className="mx-auto mt-24 max-w-3xl px-4 text-center">

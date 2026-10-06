@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { getStripe, syncSubscription } from "@/lib/stripe";
+import { fulfillCheckoutSession, markSessionStatus, refundByPaymentIntent } from "@/lib/purchases";
 import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
@@ -35,7 +36,24 @@ export async function POST(req: Request) {
         if (session.mode === "subscription" && session.subscription) {
           const id = typeof session.subscription === "string" ? session.subscription : session.subscription.id;
           await syncSubscription(await getStripe().subscriptions.retrieve(id));
+        } else if (session.mode === "payment") {
+          await fulfillCheckoutSession(session); // cartão: já pago; Pix/boleto: fica pendente até async_payment_succeeded
         }
+        break;
+      }
+      case "checkout.session.async_payment_succeeded":
+        await fulfillCheckoutSession(event.data.object as Stripe.Checkout.Session);
+        break;
+      case "checkout.session.async_payment_failed":
+        await markSessionStatus(event.data.object as Stripe.Checkout.Session, "FAILED");
+        break;
+      case "checkout.session.expired":
+        await markSessionStatus(event.data.object as Stripe.Checkout.Session, "EXPIRED");
+        break;
+      case "charge.refunded": {
+        const charge = event.data.object as Stripe.Charge;
+        const pi = typeof charge.payment_intent === "string" ? charge.payment_intent : charge.payment_intent?.id;
+        if (pi && charge.refunded) await refundByPaymentIntent(pi); // só reembolso total remove créditos
         break;
       }
       case "customer.subscription.created":

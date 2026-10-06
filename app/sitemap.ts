@@ -9,6 +9,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const fixed = [
     { path: "", priority: 1, changeFrequency: "weekly" as const },
     { path: "/precos", priority: 0.9, changeFrequency: "monthly" as const },
+    { path: "/consultas", priority: 0.9, changeFrequency: "monthly" as const },
     { path: "/signos", priority: 0.8, changeFrequency: "monthly" as const },
     { path: "/lua", priority: 0.8, changeFrequency: "daily" as const },
     { path: "/simbolos", priority: 0.8, changeFrequency: "monthly" as const },

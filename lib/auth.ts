@@ -17,7 +17,10 @@ export type CurrentUser = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>
 
 export async function requireUser(): Promise<CurrentUser> {
   const user = await getCurrentUser();
-  if (!user) redirect("/entrar");
+  if (!user) {
+    // cookie com JWT válido mas sessão revogada: limpa o cookie antes de ir ao login (evita loop com o proxy)
+    redirect((await getSession()) ? "/api/auth/clear" : "/entrar");
+  }
   return user;
 }
 

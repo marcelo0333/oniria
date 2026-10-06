@@ -58,6 +58,16 @@ Legenda: `[x]` concluído · `[ ]` pendente. Cada fase = 1+ commits na branch `c
 - [x] T8.4 `/api/health`, README de operação, scripts (`db:migrate`, `db:dev`, `stripe-setup`)
 - [x] T8.5 Teste ponta a ponta manual (build + Postgres local) e correções
 
+## Fase 8.1 — Revisão geral + consultas avulsas
+- [x] T8.6 Revisão completa: corrigido loop de redirecionamento com sessão revogada, signo solar com hora, troca de plano pelo portal, cancelamento agendado visível, cron dividido (horóscopos 00h05 / e-mails 07h), descadastro de e-mail com 1 clique (List-Unsubscribe), exportação LGPD com compras, imagem OG padrão, redirecionamento seguro (`next`) após login/cadastro
+- [x] T8.7 Modelo de dados de compras e créditos (`Purchase`, `CreditBalance`, `UsageEvent.source`)
+- [x] T8.8 Catálogo de consultas avulsas (`lib/products.ts`) e checkout de pagamento único (Pix/cartão)
+- [x] T8.9 Webhook: cartão, Pix assíncrono (pendente → pago), falha, expiração e reembolso (remove créditos não usados)
+- [x] T8.10 Consumo: cota do plano primeiro, depois crédito; estorno devolve ao lugar certo (testado com concorrência)
+- [x] T8.11 Revolução Solar (produto exclusivo): cálculo do retorno solar + leitura do ano por IA
+- [x] T8.12 UI: `/consultas`, `/app/consultas` (créditos, histórico, confirmação no retorno), ofertas quando a cota acaba, vitrine na landing e em preços
+- [x] T8.13 Termos (consultas avulsas, créditos, reembolso) e Privacidade (retenção de compras)
+
 ## Fase 9 — Go-live (checklist fora do código, ver `GO_LIVE.md`) — depende de você: empresa, contas e chaves
 - [ ] T9.1 Empresa/CNPJ, conta bancária PJ, Stripe ativado
 - [ ] T9.2 Domínio, DNS, e-mail remetente (SPF/DKIM/DMARC)
@@ -66,7 +76,7 @@ Legenda: `[x]` concluído · `[ ]` pendente. Cada fase = 1+ commits na branch `c
 - [ ] T9.5 Teste de compra real, monitoramento, backup, lançamento
 
 ## Notas de execução
-- Tudo das Fases 1–8 está implementado e verificado: lint, typecheck, build, 52 testes (unitários + Postgres real, incluindo 20 requisições simultâneas na cota) e e2e completo (cadastro → perfil → sonho → mapa astral → tarot → compatibilidade → numerologia → cota → logout; reset de senha; verificação de e-mail; exclusão de conta; webhook Stripe assinado e idempotente).
+- Tudo das Fases 1–8.1 está implementado e verificado: lint, typecheck, build, 66 testes (unitários + Postgres real, incluindo 20 requisições simultâneas na cota) e e2e completo (cadastro → perfil → sonho → mapa astral → tarot → compatibilidade → numerologia → cota → logout; reset de senha; verificação de e-mail; exclusão de conta; webhook Stripe assinado e idempotente para assinaturas e compras avulsas — cartão, Pix assíncrono, falha, expiração e reembolso).
 - Não foi possível validar nesta sandbox: build real da imagem Docker (sem daemon; o modo `standalone` foi validado rodando `node .next/standalone/server.js`), chamadas reais ao Gemini/Pollinations/Stripe/Resend (sem chaves/rede) — cobertas por servidor Gemini falso e eventos Stripe assinados localmente.
 - Fase 9 só pode ser concluída por você (CNPJ, banco, Stripe live, domínio, chaves) — passo a passo em `GO_LIVE.md`.
 

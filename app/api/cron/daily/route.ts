@@ -8,6 +8,7 @@ import { moonInfo } from "@/lib/mystic/astro";
 import { sendDailyEmail } from "@/lib/email";
 import { cleanupRateLimits } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
+import { unsubscribeUrl } from "@/lib/unsubscribe";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -15,15 +16,26 @@ export const dynamic = "force-dynamic";
 
 /**
  * Cron diário (Vercel Cron / qualquer agendador): GET com `Authorization: Bearer $CRON_SECRET`.
- * 1) pré-gera os 12 horóscopos; 2) envia e-mail matinal; 3) limpeza de dados expirados.
+ * `?task=horoscopes` (logo após a meia-noite de Brasília): pré-gera os 12 horóscopos + limpeza.
+ * `?task=emails` (de manhã): envia o e-mail matinal.  Sem `task`: faz tudo.
  */
 export async function GET(req: Request) {
   const secret = env.cronSecret();
   if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
+  const task = new URL(req.url).searchParams.get("task") ?? "all";
   const date = todayBR();
   const horoscopes: Record<string, Awaited<ReturnType<typeof getHoroscope>>> = {};
-  for (const sign of SIGNS) horoscopes[sign.slug] = await getHoroscope(sign.slug, date);
+  for (const sign of SIGNS) horoscopes[sign.slug] = await getHoroscope(sign.slug, date); // cache: barato se já gerado
+
+  if (task === "horoscopes" || task === "all") {
+    await cleanupRateLimits();
+    await prisma.authToken.deleteMany({ where: { expiresAt: { lt: new Date(Date.now() - 7 * 86400e3) } } });
+  }
+  if (task === "horoscopes") {
+    logger.info("Cron: horóscopos gerados", { date });
+    return NextResponse.json({ date, task, horoscopes: SIGNS.length });
+  }
 
   const moon = moonInfo(new Date()).label;
   const startOfDay = new Date(`${date}T00:00:00-03:00`);
@@ -37,15 +49,13 @@ export async function GET(req: Request) {
   for (const u of users) {
     const sign = getSign(u.sunSign);
     if (!sign) continue;
-    const res = await sendDailyEmail(u.email, u.name, sign.name, horoscopes[sign.slug].general, moon);
+    const res = await sendDailyEmail(u.email, u.name, sign.name, horoscopes[sign.slug].general, moon, unsubscribeUrl(env.appUrl, u.id));
     if (res.ok) {
       sent++;
       await prisma.user.update({ where: { id: u.id }, data: { lastDailyEmail: new Date() } });
     }
   }
 
-  await cleanupRateLimits();
-  await prisma.authToken.deleteMany({ where: { expiresAt: { lt: new Date(Date.now() - 7 * 86400e3) } } });
-  logger.info("Cron diário concluído", { date, candidates: users.length, sent });
-  return NextResponse.json({ date, candidates: users.length, sent });
+  logger.info("Cron: e-mails diários", { date, candidates: users.length, sent });
+  return NextResponse.json({ date, task, candidates: users.length, sent });
 }

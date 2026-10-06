@@ -206,17 +206,14 @@ const describe = (lon: number) => {
   return { longitude: lon, sign: sign.slug, signName: sign.name, degree: degreeInSign(lon) };
 };
 
-export function computeNatalChart(birth: BirthInput): NatalChart {
-  const hasTime = !!birth.time && birth.latitude != null && birth.longitude != null;
-  const tz = birth.timeZone ?? "America/Sao_Paulo";
-  // sem hora exata, usa meio-dia local (Lua pode variar ±6°; ascendente/casas omitidos)
-  const utc = localToUtc(birth.date, birth.time || "12:00", tz);
-
+/** Mapa de um instante qualquer (natal, revolução solar…). Com lat/lon calcula ascendente, MC e casas. */
+export function computeChartAt(utc: Date, latitude?: number | null, longitude?: number | null, hasExactTime = true): NatalChart {
+  const withAngles = hasExactTime && latitude != null && longitude != null;
   const planets = planetPositions(utc);
   let ascendant: NatalChart["ascendant"];
   let midheaven: NatalChart["midheaven"];
-  if (hasTime) {
-    const a = angles(utc, birth.latitude!, birth.longitude!);
+  if (withAngles) {
+    const a = angles(utc, latitude!, longitude!);
     ascendant = describe(a.ascendant);
     midheaven = describe(a.midheaven);
     for (const p of planets) p.house = wholeSignHouse(p.longitude, a.ascendant);
@@ -229,7 +226,35 @@ export function computeNatalChart(birth: BirthInput): NatalChart {
   const personal = planets.filter((p) => ["sun", "moon", "mercury", "venus", "mars"].includes(p.key));
   for (const p of personal) elements[signFromLongitude(p.longitude).element]++;
 
-  return { planets, ascendant, midheaven, aspects: aspects(pointsForAspects), hasExactTime: hasTime, utc: utc.toISOString(), elements };
+  return { planets, ascendant, midheaven, aspects: aspects(pointsForAspects), hasExactTime: withAngles, utc: utc.toISOString(), elements };
+}
+
+export function birthUtc(birth: BirthInput): Date {
+  // sem hora exata, usa meio-dia local (Lua pode variar ±6°; ascendente/casas omitidos)
+  return localToUtc(birth.date, birth.time || "12:00", birth.timeZone ?? "America/Sao_Paulo");
+}
+
+export function computeNatalChart(birth: BirthInput): NatalChart {
+  const hasTime = !!birth.time && birth.latitude != null && birth.longitude != null;
+  return computeChartAt(birthUtc(birth), birth.latitude, birth.longitude, hasTime);
+}
+
+// ───────── Revolução Solar ─────────
+
+/** Instante em que o Sol retorna à longitude natal, a partir de `from`. */
+export function nextSolarReturn(natalSunLongitude: number, from: Date): Date {
+  const t = A.SearchSunLongitude(natalSunLongitude, from, 370);
+  if (!t) throw new Error("Não foi possível calcular a revolução solar");
+  return t.date;
+}
+
+/** Ano solar vigente: da última revolução solar (≤ agora) até a próxima. */
+export function currentSolarYear(birth: BirthInput, now = new Date()) {
+  const natalSun = eclipticLongitude(A.Body.Sun, birthUtc(birth));
+  let start = nextSolarReturn(natalSun, new Date(now.getTime() - 366 * 86400e3));
+  if (start.getTime() > now.getTime()) start = nextSolarReturn(natalSun, new Date(now.getTime() - 731 * 86400e3));
+  const end = nextSolarReturn(natalSun, new Date(start.getTime() + 300 * 86400e3));
+  return { start, end, natalSun };
 }
 
 /** Resumo textual compacto do clima astral de um instante (usado nos prompts). */

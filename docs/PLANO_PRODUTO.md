@@ -75,6 +75,27 @@ Diferencial: **sonho + astrologia + imagens geradas por IA** (nenhum app popular
 
 Custo de IA por interpretação ≈ centavos; margem bruta > 85% nos planos pagos. Revisar com dados reais após 30 dias.
 
+## 4.1 Consultas avulsas (pagamento único) — nova modalidade
+
+Para quem não quer assinatura (grande parte do público místico compra "uma consulta" pontual, como faria com um astrólogo):
+
+| Consulta | Preço | Observação |
+|---|---|---|
+| ☀️ **Revolução Solar** — previsões do ano astrológico | **R$ 29,90** | **Produto-âncora exclusivo**: só avulso (ou incluso no Oráculo, 1/mês). Mapa calculado no instante exato do retorno do Sol + leitura do ano por trimestre |
+| ✨ Leitura do Mapa Astral | R$ 14,90 | |
+| 🌙 Interpretação de sonho | R$ 4,90 | entrada de baixo atrito |
+| 🌌 Pacote 5 sonhos | R$ 17,90 | ancoragem: "economize 27%" |
+| 🔮 Tarot 3 cartas | R$ 6,90 | |
+| 💞 Compatibilidade do casal | R$ 7,90 | |
+| 🔢 Numerologia completa | R$ 9,90 | |
+
+Como funciona:
+- **Pix ou cartão** via Stripe Checkout (`mode=payment`, preços definidos em `lib/products.ts` — não é preciso cadastrar produtos no Stripe).
+- Cada compra gera **créditos** que **não expiram**. A ordem de consumo é: cota mensal do plano → créditos avulsos.
+- A oferta aparece **no momento de maior intenção**: quando a cota acaba, o app mostra "Comprar <consulta> · R$ X" ao lado de "Ver planos".
+- Pix é assíncrono: a compra fica *pendente* e o crédito é liberado no webhook `checkout.session.async_payment_succeeded`.
+- Reembolso total pelo Stripe remove os créditos ainda não usados (consistente com o CDC: reembolso de 7 dias para consultas não utilizadas).
+
 ## 5. Arquitetura
 
 - **Next.js 16 (App Router)**, React 19, Tailwind 4, framer-motion.
@@ -82,7 +103,7 @@ Custo de IA por interpretação ≈ centavos; margem bruta > 85% nos planos pago
 - **Auth própria**: JWT (jose) em cookie httpOnly, bcrypt, verificação de e-mail, reset de senha, rate limit em Postgres. `proxy.ts` protege `/app/*`.
 - **IA**: Gemini (`gemini-2.5-flash`) com saída JSON validada por Zod, timeouts e retry. Imagens Pollinations **pelo servidor** via `/api/image` assinado (HMAC) e cacheável em CDN — chave nunca vai ao browser.
 - **Astro**: `astronomy-engine` (Sol…Plutão, Lua, fases), ascendente/MC por tempo sideral, fuso por IANA (Open-Meteo geocoding).
-- **Pagamentos**: Stripe Checkout + Customer Portal + webhooks idempotentes. Plano do usuário sempre derivado do webhook.
+- **Pagamentos**: Stripe Checkout (assinatura e pagamento único com Pix) + Customer Portal + webhooks idempotentes. Plano e créditos sempre derivados do webhook (com confirmação também no retorno do checkout).
 - **E-mail**: Resend (fallback para console em dev).
 - **Observabilidade**: `/api/health`, logs estruturados, (opcional) Sentry via env.
 - **Qualidade**: Vitest, ESLint, TypeScript estrito, GitHub Actions (lint+typecheck+test+build).

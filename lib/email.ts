@@ -6,7 +6,7 @@ import { logger } from "./logger";
 const escape = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
-function layout(title: string, bodyHtml: string, cta?: { label: string; url: string }) {
+function layout(title: string, bodyHtml: string, cta?: { label: string; url: string }, unsubscribe?: string) {
   return `<!doctype html><html lang="pt-BR"><body style="margin:0;background:#05010d;font-family:Arial,Helvetica,sans-serif;color:#e4e4e7">
   <div style="max-width:520px;margin:0 auto;padding:32px 20px">
     <p style="font-size:22px;letter-spacing:4px;color:#a78bfa;margin:0 0 24px">✦ ONIRIA</p>
@@ -15,11 +15,11 @@ function layout(title: string, bodyHtml: string, cta?: { label: string; url: str
       <div style="font-size:15px;line-height:1.6;color:#d4d4d8">${bodyHtml}</div>
       ${cta ? `<p style="margin:28px 0 8px"><a href="${cta.url}" style="background:#7b5cfa;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:bold;display:inline-block">${escape(cta.label)}</a></p>` : ""}
     </div>
-    <p style="font-size:12px;color:#71717a;margin-top:20px">Oniria · Conteúdo para entretenimento e autoconhecimento.<br>Dúvidas? ${escape(env.supportEmail())}</p>
+    <p style="font-size:12px;color:#71717a;margin-top:20px">Oniria · Conteúdo para entretenimento e autoconhecimento.<br>Dúvidas? ${escape(env.supportEmail())}${unsubscribe ? `<br><a href="${unsubscribe}" style="color:#71717a">Não quero mais receber o e-mail diário</a>` : ""}</p>
   </div></body></html>`;
 }
 
-export async function sendEmail(to: string, subject: string, html: string) {
+export async function sendEmail(to: string, subject: string, html: string, headers?: Record<string, string>) {
   const apiKey = env.resendApiKey();
   if (!apiKey) {
     logger.warn("RESEND_API_KEY ausente — e-mail não enviado (modo dev)", { to, subject });
@@ -29,7 +29,7 @@ export async function sendEmail(to: string, subject: string, html: string) {
   }
   try {
     const resend = new Resend(apiKey);
-    const { error } = await resend.emails.send({ from: env.emailFrom(), to, subject, html });
+    const { error } = await resend.emails.send({ from: env.emailFrom(), to, subject, html, headers });
     if (error) throw new Error(error.message);
     return { ok: true as const };
   } catch (error) {
@@ -62,7 +62,7 @@ export function sendPasswordResetEmail(to: string, token: string) {
   );
 }
 
-export function sendDailyEmail(to: string, name: string, signName: string, horoscope: string, moon: string) {
+export function sendDailyEmail(to: string, name: string, signName: string, horoscope: string, moon: string, unsubscribe: string) {
   return sendEmail(
     to,
     `Seu horóscopo de hoje — ${signName}`,
@@ -70,7 +70,9 @@ export function sendDailyEmail(to: string, name: string, signName: string, horos
       `Bom dia, ${name.split(" ")[0]} 🌙`,
       `<p><strong>${escape(moon)}</strong></p><p>${escape(horoscope)}</p><p style="color:#a1a1aa">Acordou lembrando de um sonho? Registre agora, antes que ele se dissolva.</p>`,
       { label: "Registrar meu sonho", url: `${env.appUrl}/app/sonhos/novo` },
+      unsubscribe,
     ),
+    { "List-Unsubscribe": `<${unsubscribe}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },
   );
 }
 
@@ -81,6 +83,17 @@ export function sendSubscriptionEmail(to: string, planName: string) {
     layout("Assinatura confirmada 🔮", `<p>Seu plano <strong>${escape(planName)}</strong> está ativo. Todos os recursos já estão liberados.</p>`, {
       label: "Abrir a Oniria",
       url: `${env.appUrl}/app`,
+    }),
+  );
+}
+
+export function sendPurchaseEmail(to: string, productName: string, price: string, href: string) {
+  return sendEmail(
+    to,
+    `Sua consulta está disponível — ${productName}`,
+    layout("Pagamento confirmado 🔮", `<p>Recebemos o pagamento de <strong>${escape(productName)}</strong> (${escape(price)}). O crédito já está na sua conta e não expira.</p>`, {
+      label: "Usar minha consulta",
+      url: `${env.appUrl}${href}`,
     }),
   );
 }

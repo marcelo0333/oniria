@@ -30,7 +30,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ r
     <div className="space-y-8">
       <header><h1 className="text-3xl font-semibold">Compatibilidade de signos</h1><p className="mt-1 text-zinc-400">Descubra a química entre duas energias zodiacais.</p></header>
       <Card className="space-y-4">
-        <UsageMeter label={quota.label} used={quota.used} limit={quota.limit} />
+        <UsageMeter label={quota.label} used={quota.used} limit={quota.limit} credits={quota.credits} />
         <CompatForm defaultA={user.sunSign ?? undefined} />
       </Card>
       {out && a && b && (

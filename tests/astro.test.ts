@@ -88,3 +88,26 @@ describe("signo solar por data", () => {
     expect(signFromDate(m, d).slug).toBe(slug);
   });
 });
+
+describe("revolução solar", () => {
+  it("o Sol volta à longitude natal (±0,01°) e o ano solar contém a data atual", async () => {
+    const { currentSolarYear, eclipticLongitude } = await import("@/lib/mystic/astro");
+    const birth = { date: "1990-05-15", time: "08:30", latitude: -23.55, longitude: -46.63, timeZone: "America/Sao_Paulo" };
+    const now = new Date("2026-10-06T12:00:00Z");
+    const y = currentSolarYear(birth, now);
+    expect(y.start.getTime()).toBeLessThanOrEqual(now.getTime());
+    expect(y.end.getTime()).toBeGreaterThan(now.getTime());
+    expect(y.start.toISOString().slice(0, 7)).toBe("2026-05");
+    const diff = Math.abs(eclipticLongitude(Body.Sun, y.start) - y.natalSun);
+    expect(Math.min(diff, 360 - diff)).toBeLessThan(0.01);
+    const days = (y.end.getTime() - y.start.getTime()) / 86400e3;
+    expect(days).toBeGreaterThan(364.5);
+    expect(days).toBeLessThan(366.5);
+  });
+  it("antes do aniversário, o ano solar começou no ano anterior", async () => {
+    const { currentSolarYear } = await import("@/lib/mystic/astro");
+    const y = currentSolarYear({ date: "1990-12-20", timeZone: "America/Sao_Paulo" }, new Date("2026-10-06T12:00:00Z"));
+    expect(y.start.toISOString().slice(0, 7)).toBe("2025-12");
+    expect(y.end.toISOString().slice(0, 7)).toBe("2026-12");
+  });
+});

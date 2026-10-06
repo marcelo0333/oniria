@@ -38,8 +38,15 @@ export default function Page() {
             <li>Preços podem ser reajustados mediante aviso prévio; o reajuste não afeta o período já pago.</li>
           </ul>
 
+          <h3>4.1 Consultas avulsas</h3>
+          <ul>
+            <li>Consultas avulsas (ex.: Revolução Solar, leitura do mapa astral, pacotes de sonhos) são <strong>pagamentos únicos</strong>, por Pix ou cartão, sem renovação automática.</li>
+            <li>Cada compra gera créditos na sua conta, que <strong>não expiram</strong> enquanto a conta existir e são usados depois que a cota mensal do seu plano acabar.</li>
+            <li>Créditos são pessoais, não transferíveis e não conversíveis em dinheiro. Se a geração falhar por erro nosso, o crédito é devolvido automaticamente.</li>
+          </ul>
+
           <h2>5. Arrependimento e reembolso</h2>
-          <p>Em contratações online, você pode desistir em até <strong>7 dias</strong> corridos após a primeira compra (art. 49 do Código de Defesa do Consumidor), com reembolso integral. Solicite por e-mail em <a href={`mailto:${env.supportEmail()}`}>{env.supportEmail()}</a>. Após esse prazo, o cancelamento interrompe renovações futuras, sem reembolso proporcional do período em curso, salvo obrigação legal.</p>
+          <p>Em contratações online, você pode desistir em até <strong>7 dias</strong> corridos após a primeira compra (art. 49 do Código de Defesa do Consumidor), com reembolso integral. Solicite por e-mail em <a href={`mailto:${env.supportEmail()}`}>{env.supportEmail()}</a>. Para consultas avulsas, o reembolso em 7 dias se aplica aos créditos ainda <strong>não utilizados</strong>, já que o conteúdo digital é entregue imediatamente ao ser usado (ao reembolsar, os créditos restantes são removidos). Após esse prazo, o cancelamento interrompe renovações futuras, sem reembolso proporcional do período em curso, salvo obrigação legal.</p>
 
           <h2>6. Uso aceitável</h2>
           <p>É proibido: usar a plataforma para fins ilícitos; tentar burlar limites, fraudar pagamentos ou acessar contas de terceiros; automatizar o acesso (bots/scraping) sem autorização; inserir conteúdo que viole direitos de terceiros ou seja ilegal, ofensivo ou envolva menores de forma imprópria; tentar manipular a IA para gerar conteúdo proibido.</p>

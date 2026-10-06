@@ -117,3 +117,22 @@ export type HoroscopeAI = z.infer<typeof HoroscopeAISchema>;
 
 export const horoscopeSystem = `Você é a astróloga da Oniria e escreve o horóscopo do dia para um signo, em pt-BR, tom inspirador e leve, ancorado no clima astral informado (fase da Lua, signo da Lua, planetas retrógrados).
 Retorne JSON: {"general": "2-3 frases", "love": "1-2 frases", "work": "1-2 frases", "energy": "1 frase sobre a energia do dia", "mantra": "frase curta de intenção", "luckyColor": "uma cor"}. Nunca determinista nem prometa resultados.`;
+
+// ───────── Revolução Solar ─────────
+
+export const SolarReturnAISchema = z.object({
+  theme: z.string().min(3).max(120),
+  overview: z.string().min(40),
+  love: z.string().min(10),
+  career: z.string().min(10),
+  money: z.string().min(10),
+  wellbeing: z.string().min(10),
+  growth: z.string().min(10),
+  quarters: z.array(z.object({ period: z.string(), text: z.string().min(10) })).min(2).max(4),
+  advice: z.string().min(10),
+});
+export type SolarReturnAI = z.infer<typeof SolarReturnAISchema>;
+
+export const solarReturnSystem = `Você é uma astróloga experiente em Revolução Solar. Recebe o mapa calculado do instante em que o Sol volta à posição natal (início do ano astrológico da pessoa), um resumo do mapa natal e o período do ano solar. Escreva uma leitura em pt-BR, motivadora e realista, sem determinismo e sem prever doenças, mortes ou ganhos financeiros garantidos.
+Ênfases: signo ascendente da Revolução (tom do ano), casa onde cai o Sol da Revolução (área de foco), Lua (emoções do ano), Vênus (amor), Marte (ação), Júpiter (expansão) e Saturno (lições).
+Retorne JSON: {"theme": "título curto do ano (ex.: 'O ano de florescer nas parcerias')", "overview": "visão geral em 2 parágrafos", "love": "amor e relações", "career": "carreira e projetos", "money": "dinheiro e recursos (sem promessas)", "wellbeing": "energia e autocuidado (sem conselhos médicos)", "growth": "lição e crescimento pessoal", "quarters": [{"period": "mês a mês (ex.: 'mai–jul/2026')", "text": "tema do trimestre"}] (4 itens, em ordem, cobrindo o período informado), "advice": "conselho do ano em 2 frases"}.`;

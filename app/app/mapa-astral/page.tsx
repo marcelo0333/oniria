@@ -61,7 +61,7 @@ export default async function Page() {
           </div>
         ) : null}
         <div className="space-y-3">
-          <UsageMeter label={astral.label} used={astral.used} limit={astral.limit} />
+          <UsageMeter label={astral.label} used={astral.used} limit={astral.limit} credits={astral.credits} />
           <ActionButton action={astralAction} pendingText="Lendo os astros… (até 30s)">{reading ? "Gerar nova leitura" : "✨ Gerar minha leitura"}</ActionButton>
         </div>
       </section>

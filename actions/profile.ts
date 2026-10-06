@@ -43,7 +43,7 @@ export async function updateProfile(_: FormState, formData: FormData): Promise<F
   let sunSign: string | null = user.sunSign;
   if (d.birthDate) {
     try {
-      sunSign = computeNatalChart({ date: d.birthDate, timeZone: d.birthTz || "America/Sao_Paulo" }).planets.find((p) => p.key === "sun")!.sign;
+      sunSign = computeNatalChart({ date: d.birthDate, time: d.birthTime || null, timeZone: d.birthTz || "America/Sao_Paulo" }).planets.find((p) => p.key === "sun")!.sign;
     } catch {
       const [, m, day] = d.birthDate.split("-").map(Number);
       sunSign = signFromDate(m, day).slug;
@@ -73,14 +73,17 @@ export async function updateProfile(_: FormState, formData: FormData): Promise<F
 /** LGPD: exportação dos dados do titular (JSON). */
 export async function exportMyData() {
   const user = await requireUser();
-  const [dreams, readings, usage] = await Promise.all([
+  const [dreams, readings, usage, purchases, credits] = await Promise.all([
     prisma.dream.findMany({ where: { userId: user.id }, orderBy: { createdAt: "asc" } }),
     prisma.reading.findMany({ where: { userId: user.id }, orderBy: { createdAt: "asc" } }),
     prisma.usageEvent.findMany({ where: { userId: user.id }, orderBy: { createdAt: "asc" } }),
+    prisma.purchase.findMany({ where: { userId: user.id }, orderBy: { createdAt: "asc" } }),
+    prisma.creditBalance.findMany({ where: { userId: user.id } }),
   ]);
-  const { password: _pw, ...profile } = user;
+  const { password: _pw, tokenVersion: _tv, ...profile } = user;
   void _pw;
-  return JSON.stringify({ exportedAt: new Date().toISOString(), profile, dreams, readings, usage }, null, 2);
+  void _tv;
+  return JSON.stringify({ exportedAt: new Date().toISOString(), profile, dreams, readings, usage, purchases, credits }, null, 2);
 }
 
 /** LGPD: exclusão definitiva da conta (cancela assinatura Stripe, apaga dados em cascata). */

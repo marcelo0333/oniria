@@ -4,6 +4,9 @@ import * as z from "zod";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { billingEnabled, createCheckoutUrl, createPortalUrl } from "@/lib/stripe";
+import { createOneTimeCheckoutUrl } from "@/lib/purchases";
+import { PRODUCT_BY_ID } from "@/lib/products";
+import { rateLimit } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
 
 const CheckoutSchema = z.object({ plan: z.enum(["MISTICO", "ORACULO"]), interval: z.enum(["month", "year"]) });
@@ -34,6 +37,25 @@ export async function openPortal() {
   } catch (error) {
     logger.error("Falha ao abrir portal", error, { userId: user.id });
     redirect("/app/assinatura?status=erro");
+  }
+  redirect(url);
+}
+
+/** Consulta avulsa: pagamento único (Pix ou cartão) que gera créditos para o recurso. */
+export async function buyProduct(formData: FormData) {
+  const productId = String(formData.get("productId") ?? "");
+  if (!PRODUCT_BY_ID[productId]) redirect("/consultas");
+  const user = await getCurrentUser();
+  if (!user) redirect(`/cadastro?next=${encodeURIComponent(`/consultas?comprar=${productId}`)}`);
+  if (!billingEnabled()) redirect("/consultas?status=indisponivel");
+  const rl = await rateLimit(`buy:${user.id}`, 10, 600);
+  if (!rl.ok) redirect("/consultas?status=limite");
+  let url: string;
+  try {
+    url = await createOneTimeCheckoutUrl(user, productId);
+  } catch (error) {
+    logger.error("Falha ao criar checkout avulso", error, { userId: user.id, productId });
+    redirect("/consultas?status=erro");
   }
   redirect(url);
 }

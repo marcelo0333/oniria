@@ -15,6 +15,7 @@ export default function Footer() {
             <li><Link className="hover:text-purple-200" href="/signos">Signos e horóscopo</Link></li>
             <li><Link className="hover:text-purple-200" href="/lua">Fases da Lua</Link></li>
             <li><Link className="hover:text-purple-200" href="/simbolos">Significado dos sonhos</Link></li>
+            <li><Link className="hover:text-purple-200" href="/consultas">Consultas avulsas</Link></li>
             <li><Link className="hover:text-purple-200" href="/precos">Planos e preços</Link></li>
           </ul>
         </div>
