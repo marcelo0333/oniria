@@ -11,8 +11,8 @@ export default function SignUpForm() {
   return (
     <form action={action} className="space-y-4" noValidate>
       <FormMessage state={state} />
-      <Input label="Nome" name="name" autoComplete="name" required error={state?.errors?.name} />
-      <Input label="E-mail" name="email" type="email" autoComplete="email" required error={state?.errors?.email} />
+      <Input label="Nome" name="name" autoComplete="name" defaultValue={state?.fields?.name} required error={state?.errors?.name} />
+      <Input label="E-mail" name="email" type="email" autoComplete="email" defaultValue={state?.fields?.email} required error={state?.errors?.email} />
       <Input label="Senha" name="password" type="password" autoComplete="new-password" required hint="Mín. 8 caracteres, com letra e número." error={state?.errors?.password} />
       <div>
         <label className="flex items-start gap-2 text-sm text-zinc-400">

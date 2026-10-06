@@ -21,11 +21,15 @@ export async function generateJSON<T>(opts: { system: string; prompt: string; sc
   const key = env.geminiApiKey();
   if (!key) throw new AIError("Serviço de IA não configurado (GOOGLE_GENAI_API_KEY).");
   client ??= new GoogleGenerativeAI(key);
-  const model = client.getGenerativeModel({
-    model: env.geminiModel(),
-    systemInstruction: `${opts.system}\n${SAFETY_RULES}`,
-    generationConfig: { responseMimeType: "application/json", temperature: opts.temperature ?? 0.9, maxOutputTokens: 4096 },
-  });
+  const model = client.getGenerativeModel(
+    {
+      model: env.geminiModel(),
+      systemInstruction: `${opts.system}\n${SAFETY_RULES}`,
+      generationConfig: { responseMimeType: "application/json", temperature: opts.temperature ?? 0.9, maxOutputTokens: 4096 },
+    },
+    // GEMINI_BASE_URL só é usado em testes automatizados (servidor falso); em produção fica vazio.
+    process.env.GEMINI_BASE_URL ? { baseUrl: process.env.GEMINI_BASE_URL } : undefined,
+  );
 
   const attempts = (opts.retries ?? 2) + 1;
   let lastError: unknown;

@@ -38,15 +38,24 @@ export async function usageSummary(user: CurrentUser) {
 export async function reserveUsage(user: CurrentUser, kind: UsageKind): Promise<string> {
   const plan = effectivePlan(user);
   const limit = PLANS[plan].limits[kind];
-  return prisma.$transaction(
-    async (tx) => {
-      const used = await tx.usageEvent.count({ where: { userId: user.id, kind, createdAt: { gte: monthStart() } } });
-      if (used >= limit) throw new QuotaError(kind, limit, plan);
-      const ev = await tx.usageEvent.create({ data: { userId: user.id, kind } });
-      return ev.id;
-    },
-    { isolationLevel: "Serializable" },
-  );
+  // Serializable: requisições simultâneas conflitantes falham com P2034 e são repetidas, nunca estouram a cota.
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await prisma.$transaction(
+        async (tx) => {
+          const used = await tx.usageEvent.count({ where: { userId: user.id, kind, createdAt: { gte: monthStart() } } });
+          if (used >= limit) throw new QuotaError(kind, limit, plan);
+          const ev = await tx.usageEvent.create({ data: { userId: user.id, kind } });
+          return ev.id;
+        },
+        { isolationLevel: "Serializable" },
+      );
+    } catch (error) {
+      const conflict = typeof error === "object" && error !== null && (error as { code?: string }).code === "P2034";
+      if (!conflict || attempt >= 5) throw error;
+      await new Promise((r) => setTimeout(r, 30 * (attempt + 1) + Math.random() * 40));
+    }
+  }
 }
 
 export async function refundUsage(eventId: string) {

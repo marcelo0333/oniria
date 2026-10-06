@@ -8,7 +8,9 @@ import { getSession } from "./session";
 export const getCurrentUser = cache(async () => {
   const session = await getSession();
   if (!session) return null;
-  return prisma.user.findUnique({ where: { id: session.userId } });
+  const user = await prisma.user.findUnique({ where: { id: session.userId } });
+  if (!user || (session.v ?? 0) !== user.tokenVersion) return null;
+  return user;
 });
 
 export type CurrentUser = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;

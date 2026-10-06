@@ -10,10 +10,8 @@ import { compatibility } from "@/lib/mystic/compat";
 import { getHoroscope } from "@/lib/services/horoscope";
 import { todayBR, formatDateBR } from "@/lib/dates";
 
-export const dynamicParams = true;
-export function generateStaticParams() {
-  return [];
-}
+// Horóscopo do dia + sessão no header: renderizado sob demanda (o horóscopo fica em cache no banco).
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ sign: string }> }): Promise<Metadata> {
   const s = SIGN_BY_SLUG[(await params).sign];

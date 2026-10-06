@@ -46,6 +46,7 @@ model User {
   role            Role      @default(USER)
   emailVerifiedAt DateTime?
   termsAcceptedAt DateTime?
+  tokenVersion    Int       @default(0) // incrementa ao redefinir a senha: invalida sessões antigas
   dailyEmail      Boolean   @default(true)
   lastDailyEmail  DateTime?
 

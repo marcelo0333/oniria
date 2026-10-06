@@ -23,7 +23,8 @@ export async function sendEmail(to: string, subject: string, html: string) {
   const apiKey = env.resendApiKey();
   if (!apiKey) {
     logger.warn("RESEND_API_KEY ausente — e-mail não enviado (modo dev)", { to, subject });
-    if (!env.isProd) console.log(`\n[email:dev] para=${to} assunto=${subject}\n${html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ")}\n`);
+    // o conteúdo (com links/tokens) só vai ao console em dev ou com opt-in explícito (testes/staging)
+    if (!env.isProd || process.env.EMAIL_LOG_TO_CONSOLE === "1") console.log(`\n[email:dev] para=${to} assunto=${subject}\n${html.replace(/<a [^>]*href="([^"]+)"[^>]*>/g, " $1 ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ")}\n`);
     return { ok: false as const, skipped: true };
   }
   try {

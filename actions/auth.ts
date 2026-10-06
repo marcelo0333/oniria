@@ -21,15 +21,17 @@ async function ip() {
 const DUMMY_HASH = bcrypt.hashSync("oniria-dummy-password", 12);
 
 export async function signup(_: FormState, formData: FormData): Promise<FormState> {
-  const parsed = SignupFormSchema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return { errors: parsed.error.flatten().fieldErrors };
+  const raw = Object.fromEntries(formData);
+  const fields = { name: String(raw.name ?? ""), email: String(raw.email ?? "") };
+  const parsed = SignupFormSchema.safeParse(raw);
+  if (!parsed.success) return { errors: parsed.error.flatten().fieldErrors, fields };
   const { name, email, password } = parsed.data;
 
   const rl = await rateLimit(`signup:${await ip()}`, 5, 3600);
-  if (!rl.ok) return { message: "Muitas tentativas. Tente novamente mais tarde." };
+  if (!rl.ok) return { message: "Muitas tentativas. Tente novamente mais tarde.", fields };
 
   const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) return { errors: { email: ["Este e-mail já está cadastrado. Tente entrar."] } };
+  if (existing) return { errors: { email: ["Este e-mail já está cadastrado. Tente entrar."] }, fields };
 
   let userId: string;
   try {
@@ -37,30 +39,32 @@ export async function signup(_: FormState, formData: FormData): Promise<FormStat
       data: { name, email, password: await bcrypt.hash(password, 12), termsAcceptedAt: new Date() },
     });
     userId = user.id;
-    await createSession({ userId: user.id, email: user.email, name: user.name });
+    await createSession({ userId: user.id, email: user.email, name: user.name, v: user.tokenVersion });
     const token = await issueToken(user.id, "VERIFY_EMAIL");
     await sendVerificationEmail(user.email, user.name, token);
   } catch (error) {
     logger.error("Erro no cadastro", error);
-    return { message: "Não foi possível criar sua conta agora. Tente novamente." };
+    return { message: "Não foi possível criar sua conta agora. Tente novamente.", fields };
   }
   logger.info("Novo cadastro", { userId });
   redirect("/app/perfil?welcome=1");
 }
 
 export async function signin(_: FormState, formData: FormData): Promise<FormState> {
-  const parsed = SigninFormSchema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return { errors: parsed.error.flatten().fieldErrors };
+  const raw = Object.fromEntries(formData);
+  const fields = { email: String(raw.email ?? "") };
+  const parsed = SigninFormSchema.safeParse(raw);
+  if (!parsed.success) return { errors: parsed.error.flatten().fieldErrors, fields };
   const { email, password } = parsed.data;
 
   const [byIp, byEmail] = await Promise.all([rateLimit(`signin-ip:${await ip()}`, 20, 900), rateLimit(`signin-email:${email}`, 8, 900)]);
-  if (!byIp.ok || !byEmail.ok) return { message: "Muitas tentativas de login. Aguarde alguns minutos." };
+  if (!byIp.ok || !byEmail.ok) return { message: "Muitas tentativas de login. Aguarde alguns minutos.", fields };
 
   const user = await prisma.user.findUnique({ where: { email } });
   const match = await bcrypt.compare(password, user?.password ?? DUMMY_HASH);
-  if (!user || !match) return { message: "E-mail ou senha inválidos." };
+  if (!user || !match) return { message: "E-mail ou senha inválidos.", fields };
 
-  await createSession({ userId: user.id, email: user.email, name: user.name });
+  await createSession({ userId: user.id, email: user.email, name: user.name, v: user.tokenVersion });
   redirect("/app");
 }
 
@@ -82,7 +86,7 @@ export async function resetPassword(_: FormState, formData: FormData): Promise<F
   if (!parsed.success) return { errors: parsed.error.flatten().fieldErrors };
   const userId = await consumeToken(parsed.data.token, "RESET_PASSWORD");
   if (!userId) return { message: "Link inválido ou expirado. Solicite um novo." };
-  await prisma.user.update({ where: { id: userId }, data: { password: await bcrypt.hash(parsed.data.password, 12) } });
+  await prisma.user.update({ where: { id: userId }, data: { password: await bcrypt.hash(parsed.data.password, 12), tokenVersion: { increment: 1 } } });
   redirect("/entrar?reset=1");
 }
 

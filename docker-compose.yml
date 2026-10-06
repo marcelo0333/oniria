@@ -1,0 +1,34 @@
+# Desenvolvimento local: Postgres + app em produção-like. Uso: cp .env.example .env && docker compose up --build
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: oniria
+      POSTGRES_PASSWORD: oniria
+      POSTGRES_DB: oniria
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U oniria"]
+      interval: 5s
+      retries: 10
+
+  migrate:
+    build: { context: ., target: migrate }
+    environment:
+      DATABASE_URL: postgresql://oniria:oniria@db:5432/oniria
+    depends_on:
+      db: { condition: service_healthy }
+
+  app:
+    build: { context: ., target: runner }
+    env_file: [.env]
+    environment:
+      DATABASE_URL: postgresql://oniria:oniria@db:5432/oniria
+      APP_URL: http://localhost:3000
+    ports: ["3000:3000"]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+
+volumes:
+  pgdata:

@@ -1,0 +1,37 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env: { POSTGRES_USER: oniria, POSTGRES_PASSWORD: oniria, POSTGRES_DB: oniria }
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U oniria" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://oniria:oniria@localhost:5432/oniria
+      SESSION_SECRET: ci-secret-ci-secret-ci-secret-ci-secret-1234
+      APP_URL: http://localhost:3000
+      GOOGLE_GENAI_API_KEY: fake
+      GEMINI_BASE_URL: http://localhost:4010
+      CRON_SECRET: ci-cron-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npx prisma migrate deploy
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Smoke e2e (Chromium + Gemini falso)
+        run: |
+          npx playwright install --with-deps chromium
+          CHROMIUM_PATH="$(node -e "console.log(require('playwright').chromium.executablePath())")" bash tests/e2e/run.sh

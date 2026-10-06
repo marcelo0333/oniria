@@ -9,6 +9,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { SIGNS } from "@/lib/mystic/signs";
 import { moonInfo } from "@/lib/mystic/astro";
 import { SITE_DESCRIPTION } from "@/lib/constants";
+import { appUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: { absolute: "Oniria — Interpretação de sonhos, mapa astral, tarot e horóscopo" },
@@ -36,8 +37,23 @@ const STEPS = [
 export default async function Home() {
   const user = await getCurrentUser();
   const moon = moonInfo(new Date());
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      { "@type": "WebSite", name: "Oniria", url: appUrl(), inLanguage: "pt-BR", description: SITE_DESCRIPTION },
+      { "@type": "Organization", name: "Oniria", url: appUrl(), logo: `${appUrl()}/icon.svg` },
+      {
+        "@type": "SoftwareApplication",
+        name: "Oniria",
+        applicationCategory: "LifestyleApplication",
+        operatingSystem: "Web",
+        offers: [{ "@type": "Offer", price: "0", priceCurrency: "BRL", name: "Grátis" }, { "@type": "Offer", price: "19.90", priceCurrency: "BRL", name: "Místico" }, { "@type": "Offer", price: "39.90", priceCurrency: "BRL", name: "Oráculo" }],
+      },
+    ],
+  };
   return (
     <SiteShell>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Hero loggedIn={!!user} />
 
       <section className="mx-auto max-w-6xl px-4">

@@ -27,6 +27,8 @@ export type FormState =
       errors?: Record<string, string[] | undefined>;
       message?: string;
       success?: boolean;
+      /** valores (não sensíveis) devolvidos para repovoar o formulário — React 19 limpa campos após a action */
+      fields?: Record<string, string>;
     }
   | undefined;
 
@@ -34,4 +36,6 @@ export type SessionPayload = {
   userId: string;
   email: string;
   name: string;
+  /** versão da sessão (User.tokenVersion); sessões antigas deixam de valer quando a senha muda */
+  v?: number;
 };
